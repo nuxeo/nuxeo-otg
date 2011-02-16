@@ -1,5 +1,5 @@
 import unittest
-from client import Client
+from notg.client import Client
 
 ROOT = "http://localhost:8080/nuxeo"
 USERNAME = PASSWORD = "Administrator"

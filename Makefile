@@ -1,7 +1,7 @@
 .PHONY: test clean setup-env
 
 test: env
-	nosetests -w src
+	PYTHONPATH=`pwd` nosetests -w tests
 
 setup-env:
 	virtualenv env

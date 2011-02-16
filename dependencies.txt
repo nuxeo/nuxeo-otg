@@ -1,3 +1,4 @@
 svn+http://svn.apache.org/repos/asf/incubator/chemistry/cmislib/trunk#egg=cmislib
 pyfsevents
+nose
 

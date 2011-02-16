@@ -67,7 +67,6 @@ class DaemonTest(unittest.TestCase):
 
         self.assertEqual(children[0].name, 'file_1.txt')
 
-
     def test_create_one_remote_file(self):
         d = self.daemon
         self.assertEqual(len(d.pending_operations()), 0)

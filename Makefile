@@ -1,13 +1,15 @@
 .PHONY: test clean setup-env
 
 test: env
-	nosetests -w test
+	nosetests -w src
 
 setup-env:
 	virtualenv env
 	./env/bin/pip install --upgrade -s -E env -r dependencies.txt
 
-env: setup-env
+env: 
+	virtualenv env
+	./env/bin/pip install --upgrade -s -E env -r dependencies.txt
 
 clean:
 	rm -rf env

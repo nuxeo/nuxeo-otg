@@ -1,17 +1,32 @@
 About
 -----
 
-Synchronizes a local folder with a remote CMIS server.
+Synchronizes a local folder with a remote Nuxeo server.
+
+Currently uses the CMIS protocol, though more efficient protocols may be
+investigated.
 
 Installing
 ----------
 
-Prerequisites on Mac OX: 
+First, you need to make sure you have:
 
-- python2.6 (sudo port install python2.6)
+- python2.6 or 2.7
 - virtualenv and pip 
 
-To install, type:
+To install the needed dependencies, type:
+
+    make env
+
+Then type:
+
+    . env/bin/activate
+
+
+Building / testing
+------------------
+
+To test, type:
 
     make test
 

@@ -21,7 +21,7 @@ class AbstractClientTest(unittest.TestCase):
 
         state = self.client.get_state(name)
         self.assertEquals(name, state.path.split("/")[-1])
-        self.assertGreaterEqual(state.mtime, now)
+        self.assert_(state.mtime >= now)
 
         self.client.delete(name)
 
@@ -32,7 +32,7 @@ class AbstractClientTest(unittest.TestCase):
 
         state = self.client.get_state(name)
         self.assertEquals(name, state.path.split("/")[-1])
-        self.assertGreaterEqual(state.mtime, now)
+        self.assert_(state.mtime >= now)
 
         content = self.client.get_content(name)
         self.assertEquals(self.TEST_CONTENT, content)
@@ -49,7 +49,7 @@ class AbstractClientTest(unittest.TestCase):
         self.assertEquals(self.TEST_CONTENT, content)
 
         state = self.client.get_state(name)
-        self.assertGreaterEqual(state.mtime, now)
+        self.assert_(state.mtime >= now)
 
         self.client.delete(name)
 
@@ -83,5 +83,6 @@ class RemoteClientTest(AbstractClientTest):
     __test__ = True
 
     def setUp(self):
-        self.client = RemoteClient(ROOT, USERNAME, PASSWORD, REMOTE_PATH)
+        self.client = RemoteClient(REPOSITORY_URL, USERNAME, PASSWORD,
+                                   REMOTE_PATH)
 

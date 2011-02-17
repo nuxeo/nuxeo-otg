@@ -56,7 +56,8 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
         self.tempdir1 = tempfile.mkdtemp()
         self.local_client = LocalClient(self.tempdir1)
 
-        self.remote_client = RemoteClient(ROOT, USERNAME, PASSWORD, REMOTE_PATH)
+        self.remote_client = RemoteClient(REPOSITORY_URL, USERNAME, PASSWORD,
+                                          REMOTE_PATH)
         try:
             self.remote_client.delete(self.FILE_NAME)
         except ObjectNotFoundException:

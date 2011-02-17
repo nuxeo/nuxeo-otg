@@ -2,4 +2,5 @@ syntax:glob
 
 env
 *.pyc
+*.swp
 

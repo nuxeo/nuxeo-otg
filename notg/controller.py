@@ -1,5 +1,6 @@
 
 from notg.storage import Storage
+import os
 
 class Controller(object):
     """Main public API for user level operations
@@ -37,7 +38,8 @@ class Controller(object):
 
     def attach(self, local_folder, remote_folder, repository_url=None,
                username=None, password=None):
-        self.storage.add_binding(local_folder, repository_url, remote_folder,
+        self.storage.add_binding(local_folder, remote_folder,
+                                 repository_url=repository_url,
                                  username=username, password=password)
 
     def list_bindings(self):
@@ -46,10 +48,21 @@ class Controller(object):
     def detach(self, local_folder):
         pass
 
+    def split_path(self, local_path):
+        """Return binding and relative path for a local absolute path
+
+        If no matching binding is found raise ValueError
+        """
+        local_path = os.path.abspath(local_path)
+        b = self.storage.get_binding(local_path)
+        if b is None:
+            raise ValueError("'%s' is not bound to any repository" % local_path)
+        return b, local_path[len(b.local_folder) + 1:]
+
     def state(self, local_folder):
-        pass
+        binding, path = self.split_path(local_folder)
+        return self.storage.get_state(binding, path)
 
     def refresh(self, local_folder=None, async=True):
         pass
-
 

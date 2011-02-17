@@ -1,4 +1,5 @@
 import unittest
+import tempfile
 from unittest.case import skip
 from notg.client import LocalClient, RemoteClient
 
@@ -9,9 +10,17 @@ USERNAME = PASSWORD = "Administrator"
 
 class AbstractClientTest(unittest.TestCase):
     __test__ = False
+    client = None
 
-    def test(self):
-        raise "Error"
+    def test_mkdir(self):
+        tmpdir = tempfile.mktemp()
+        self.client.mkdir(tmpdir)
+        self.client.delete(tmpdir)
+
+    def test_mkfile(self):
+        tmpfile = tempfile.mktemp()
+        self.client.mkfile(tmpfile)
+        self.client.delete(tmpfile)
 
 
 class LocalClientTest(AbstractClientTest):
@@ -22,7 +31,7 @@ class LocalClientTest(AbstractClientTest):
 
 
 class RemoteClientTest(AbstractClientTest):
-    __test__ = True
+    __test__ = False
 
     def setUp(self):
         self.client = RemoteClient(ROOT, USERNAME, PASSWORD, PATH)

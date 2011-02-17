@@ -1,6 +1,7 @@
 """Clients implement a defined set of operations.
 
 """
+import os
 from cmislib.model import CmisClient
 
 class LocalClient(object):
@@ -23,16 +24,23 @@ class LocalClient(object):
 
     # Modifiers
     def mkdir(self, path):
-        pass
+        os.mkdir(os.path.join(self.root, path))
 
-    def mkfile(self, path):
-        pass
+    def mkfile(self, path, content=None):
+        fd = open(os.path.join(self.root, path), "wcb")
+        if content:
+            fd.write(content)
+        fd.close()
 
     def update(self, path, content):
         pass
 
     def delete(self, path):
-        pass
+        os_path = os.path.join(self.root, path)
+        if os.path.isfile(os_path):
+            os.unlink(os_path)
+        else:
+            os.rmdir(os_path)
 
 
 class RemoteClient(object):

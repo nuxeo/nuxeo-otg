@@ -12,11 +12,27 @@ class Binding(object):
         self.password = password
 
 
+class CompoundState(object):
+
+    local_state = 'unknown'
+    local_mdate = None
+    local_digest = None
+
+    remote_state = 'unknown'
+    remote_mdate = None
+    remote_digest = None
+
+    def __init__(self, binding, path):
+        self.binding = binding
+        self.path = path
+
+
 class Storage(object):
     """Local storage for stateful metadata and interprocess communication"""
 
     def __init__(self, db_path=None):
         self.bindings = []
+        self.states = {}
 
     def add_binding(self, local_folder, remote_folder, repository_url=None,
                     username=None, password=None):
@@ -41,5 +57,14 @@ class Storage(object):
         return None
 
     def get_state(self, binding, path):
-        return 'unknown'
+        return self.states.get((binding, path), CompoundState(binding, path))
+
+    def set_state(self, binding, path, state):
+        self.states[(binding, path)] = state
+
+    def update_local_states(self, binding, new_states):
+        pass
+
+    def update_remote_states(self, binding, new_states):
+        pass
 

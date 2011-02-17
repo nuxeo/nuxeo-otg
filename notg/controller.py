@@ -59,9 +59,10 @@ class Controller(object):
             raise ValueError("'%s' is not bound to any repository" % local_path)
         return b, local_path[len(b.local_folder) + 1:]
 
-    def state(self, local_folder):
+    def status(self, local_folder):
+        """Highlevel text status reflecting the local state"""
         binding, path = self.split_path(local_folder)
-        return self.storage.get_state(binding, path)
+        return self.storage.get_state(binding, path).local_state
 
     def refresh(self, local_folder=None, async=True):
         pass

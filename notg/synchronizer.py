@@ -40,19 +40,19 @@ class Synchronizer(object):
         self.storage.update_remote_states(self.binding, new_states)
 
     def fetch_local_states(self):
-        self.fetch_states(self.local_client)
+        new_states = self.fetch_states(self.local_client)
         self.storage.update_local_states(self.binding, new_states)
 
     def fetch_states(self, client):
-        return []
+        return client.get_descendants("")
 
     #
     # Basic update operations
     #
     def push(self, path):
         self.log("Pushing object with path: %s" % path)
-        info = self.local_client.get_info(path)
-        if info['type'] == 'folder':
+        state = self.local_client.get_state(path)
+        if state.type == 'folder':
             self.remote_client.mkdir(path)
         else:
             content = self.local_client.get_content(path)
@@ -60,8 +60,8 @@ class Synchronizer(object):
 
     def pull(self, path):
         self.log("Pulling object with path: %s" % path)
-        info = self.remote_client.get_info(path)
-        if info['type'] == 'folder':
+        state = self.remote_client.get_state(path)
+        if state.type == 'folder':
             self.local_client.mkdir(path)
         else:
             content = self.remote_client.get_content(path)

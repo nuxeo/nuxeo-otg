@@ -11,10 +11,10 @@ class State(object):
 
 class Synchronizer(object):
 
-    def __init__(self, local_client, remote_client):
+    def __init__(self, storage, local_client, remote_client):
+        self.storage = storage
         self.local_client = local_client
         self.remote_client = remote_client
-
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync."""

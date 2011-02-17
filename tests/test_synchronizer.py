@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from cmislib.exceptions import ObjectNotFoundException
 
+from notg.storage import Storage
 from notg.client import LocalClient, RemoteClient
 from notg.synchronizer import Synchronizer
 
@@ -28,15 +29,19 @@ class LocalLocalSynchronizerTest(AbstractSynchronizerTest):
     __test__ = True
 
     def setUp(self):
+        self.storagedir = tempfile.mkdtemp()
         self.tempdir1 = tempfile.mkdtemp()
         self.tempdir2 = tempfile.mkdtemp()
 
+        self.storage = Storage(self.storagedir)
         self.local_client = LocalClient(self.tempdir1)
         self.remote_client = LocalClient(self.tempdir2)
 
-        self.synchronizer = Synchronizer(self.local_client, self.remote_client)
+        self.synchronizer = Synchronizer(
+            self.storage, self.local_client, self.remote_client)
 
     def tearDown(self):
+        shutil.rmtree(self.storagedir)
         shutil.rmtree(self.tempdir1)
         shutil.rmtree(self.tempdir2)
 
@@ -45,6 +50,9 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
     __test__ = True
 
     def setUp(self):
+        self.storagedir = tempfile.mkdtemp()
+        self.storage = Storage(self.storagedir)
+
         self.tempdir1 = tempfile.mkdtemp()
         self.local_client = LocalClient(self.tempdir1)
 
@@ -54,9 +62,11 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
         except ObjectNotFoundException:
             pass
 
-        self.synchronizer = Synchronizer(self.local_client, self.remote_client)
+        self.synchronizer = Synchronizer(
+            self.storage, self.local_client, self.remote_client)
 
     def tearDown(self):
+        shutil.rmtree(self.storagedir)
         shutil.rmtree(self.tempdir1)
         #try:
         #    self.remote_client.delete(self.FILE_NAME)

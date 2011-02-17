@@ -1,4 +1,6 @@
 
+from notg.storage import Storage
+
 class Controller(object):
     """Main public API for user level operations
 
@@ -20,7 +22,7 @@ class Controller(object):
         self.monitor = monitor
 
         # where to persist the current bindings
-        if storage is None or isintance(storate, basestring):
+        if storage is None or isinstance(storage, basestring):
             self.storage = Storage(storage)
         else:
             self.storage = storage
@@ -30,10 +32,10 @@ class Controller(object):
     def start_syncronizer(self):
         pass
 
-    def stop_syncrhonizer(self):
+    def stop_synchronizer(self):
         pass
 
-    def attach(self, local_folder, repository_url, remote_folder,
+    def attach(self, local_folder, remote_folder, repository_url=None,
                username=None, password=None):
         self.storage.add_binding(local_folder, repository_url, remote_folder,
                                  username=username, password=password)
@@ -47,7 +49,7 @@ class Controller(object):
     def state(self, local_folder):
         pass
 
-    def refresh(self, local_folder=None):
+    def refresh(self, local_folder=None, async=True):
         pass
 
 

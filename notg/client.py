@@ -16,8 +16,8 @@ class Client(object):
     def get_info(self, path):
         pass
 
-    def get_stream(self, path):
-        """Returns file content (stream) as a string. Fix later."""
+    def get_content(self, path):
+        """Returns file/document content as a string. Fix later to handle streaming."""
         pass
 
     def get_children(self, path):
@@ -52,12 +52,16 @@ class LocalClient(Client):
 
     # Getters
     def get_info(self, path):
-        fd = open(os.path.join(self.root, path), "wcb")
+        os_path = os.path.join(self.root, path)
+        info = {}
+        if os.path.isdir(os_path):
+            info['type'] = 'folder'
+        else:
+            info['type'] = 'file'
+        return info
 
-        pass
-
-    def get_stream(self, path):
-        fd = open(os.path.join(self.root, path), "b")
+    def get_content(self, path):
+        fd = open(os.path.join(self.root, path), "rb")
         return fd.read()
 
     def get_children(self, path):

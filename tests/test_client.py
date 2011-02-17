@@ -1,7 +1,5 @@
 import random
 import unittest
-import tempfile
-from unittest.case import skip
 from notg.client import LocalClient, RemoteClient
 
 LOCAL_PATH = "/tmp"

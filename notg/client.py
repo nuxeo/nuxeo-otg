@@ -47,8 +47,8 @@ class Client(object):
 
 class LocalClient(Client):
 
-    def __init__(self, root):
-        self.root = root
+    def __init__(self, base_folder):
+        self.base_folder = base_folder
 
     # Getters
     def get_state(self, path):
@@ -63,7 +63,7 @@ class LocalClient(Client):
         return State(path, uid, type, mtime)
 
     def get_content(self, path):
-        fd = open(os.path.join(self.root, path), "rb")
+        fd = open(os.path.join(self.base_folder, path), "rb")
         return fd.read()
 
     def get_descendants(self, path):
@@ -71,21 +71,21 @@ class LocalClient(Client):
 
     # Modifiers
     def mkdir(self, path):
-        os.mkdir(os.path.join(self.root, path))
+        os.mkdir(os.path.join(self.base_folder, path))
 
     def mkfile(self, path, content=None):
-        fd = open(os.path.join(self.root, path), "wcb")
+        fd = open(os.path.join(self.base_folder, path), "wcb")
         if content:
             fd.write(content)
         fd.close()
 
     def update(self, path, content):
-        fd = open(os.path.join(self.root, path), "wb")
+        fd = open(os.path.join(self.base_folder, path), "wb")
         fd.write(content)
         fd.close()
 
     def delete(self, path):
-        os_path = os.path.join(self.root, path)
+        os_path = os.path.join(self.base_folder, path)
         if os.path.isfile(os_path):
             os.unlink(os_path)
         else:
@@ -95,15 +95,14 @@ class LocalClient(Client):
 class RemoteClient(Client):
     """CMIS Client"""
 
-    def __init__(self, repo_url, username, password, base_folder):
-        self.repo_url = repo_url
+    def __init__(self, repository_url, username, password, base_folder):
+        self.repository_url = repository_url
         self.username = username
         self.password = password
         self.base_folder = base_folder
 
-        self.client = CmisClient(repo_url, username, password)
+        self.client = CmisClient(repository_url, username, password)
         self.repo = self.client.getDefaultRepository()
-
 
     def get_descendants(self, path=""):
         result = []

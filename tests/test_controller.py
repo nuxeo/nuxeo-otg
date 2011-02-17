@@ -1,5 +1,5 @@
 import unittest
-from notg.daemon import Daemon
+from notg.controller import Controller
 from notg.client import Client
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -15,13 +15,13 @@ USERNAME = 'Administrator'
 PASSWORD = 'Administrator'
 
 
-class DaemonTest(unittest.TestCase):
+class ControllerTest(unittest.TestCase):
 
     def setUp(self):
-        # syncronization daemon
-        self.daemon = Daemon(monitor=False)
+        # controller component to test
+        self.controller = Controller(monitor=False)
 
-        # local document to synchronise
+        # local document to synchronize
         self.local_folder = mkdtemp()
 
         # direct access to the server to simulate user creating / updating /
@@ -34,31 +34,31 @@ class DaemonTest(unittest.TestCase):
         self.client.create(TEST_WORKSPACE, 'Workspace')
 
         # attache the local and remote folders
-        self.daemon.attach(self.local_folder, REPO_URL,
-                           BASE_FOLDER + TEST_WORKSPACE,
-                           username=USERNAME, password=PASSWORD)
+        self.controller.attach(self.local_folder, REPO_URL,
+                               BASE_FOLDER + TEST_WORKSPACE,
+                               username=USERNAME, password=PASSWORD)
 
     def tearDown(self):
         rmtree(self.local_folder)
         self.client.delete(TEST_WORKSPACE)
-        self.daemon.clear_storage()
+        self.controller.clear_storage()
 
     def test_create_one_local_file(self):
-        d = self.daemon
+        ctl = self.controller
 
         # the remote workspace is empty, as is the local folder: nothing to do
-        self.assertEqual(len(d.pending_operations()), 0)
+        self.assertEqual(len(ctl.pending_operations()), 0)
 
         # the local user drop a text file
         with open(join(self.local_folder, 'file_1.txt'), 'wb') as f:
             f.write("This is the content of a text file.\n")
 
         # recompute the diff
-        self.assertEqual(len(d.pending_operations()), 1)
+        self.assertEqual(len(ctl.pending_operations()), 1)
 
         # synchronize with server
-        d.synchronize(async=False)
-        self.assertEqual(len(d.pending_operations()), 0)
+        ctl.refresh(async=False)
+        self.assertEqual(len(ctl.pending_operations()), 0)
 
         # check content on server
         c = self.client
@@ -70,8 +70,8 @@ class DaemonTest(unittest.TestCase):
                          "This is the content of a text file.\n")
 
     def test_create_one_remote_file(self):
-        d = self.daemon
-        self.assertEqual(len(d.pending_operations()), 0)
+        ctl = self.controller
+        self.assertEqual(len(ctl.pending_operations()), 0)
 
         # the users create a set a of new file on the server
         c = self.client
@@ -79,11 +79,11 @@ class DaemonTest(unittest.TestCase):
                       content='This is the content of the server file.\n')
 
         # one operation to perform
-        self.assertEqual(len(d.pending_operations()), 1)
+        self.assertEqual(len(ctl.pending_operations()), 1)
 
         # trigger the sync
-        d.synchronize(async=False)
-        self.assertEqual(len(d.pending_operations()), 0)
+        ctl.refresh(async=False)
+        self.assertEqual(len(ctl.pending_operations()), 0)
 
         # check content on local filesystem
         local_files = listdir(self.local_folder)

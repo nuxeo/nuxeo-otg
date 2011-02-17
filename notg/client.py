@@ -24,7 +24,7 @@ class Client(object):
         """Returns file/document content as a string. Fix later to handle streaming."""
         raise NotImplementedError
 
-    def get_descendants(self, path):
+    def get_descendants(self, path=None):
         raise NotImplementedError
 
     # Modifiers
@@ -66,8 +66,11 @@ class LocalClient(Client):
         fd = open(os.path.join(self.base_folder, path), "rb")
         return fd.read()
 
-    def get_descendants(self, path):
-        os_path = os.path.join(self.base_folder, path)
+    def get_descendants(self, path=None):
+        if path is None:
+            os_path = self.base_folder
+        else:
+            os_path = os.path.join(self.base_folder, path)
         result = []
         for root, dirs, files in os.walk(os_path):
             for dir in dirs:
@@ -118,7 +121,7 @@ class RemoteClient(Client):
 
         remote_path = self.get_remote_path(path)
         object = self.repo.getObjectByPath(remote_path)
-        
+
         children = object.getChildren()
         for child in children:
             properties = child.properties
@@ -140,7 +143,7 @@ class RemoteClient(Client):
         return result
 
     def get_state(self, path):
-        remote_path = self.get_remote_path(path)        
+        remote_path = self.get_remote_path(path)
         object = self.repo.getObjectByPath(remote_path)
         properties = object.properties
         return self.make_state(path, properties)

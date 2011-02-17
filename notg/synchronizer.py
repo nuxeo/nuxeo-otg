@@ -44,7 +44,7 @@ class Synchronizer(object):
         self.storage.update_local_states(self.binding, new_states)
 
     def fetch_states(self, client):
-        return client.get_descendants("")
+        return client.get_descendants()
 
     #
     # Basic update operations

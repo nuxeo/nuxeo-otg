@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 import unittest
 from notg.client import LocalClient, RemoteClient
@@ -14,18 +15,24 @@ class AbstractClientTest(unittest.TestCase):
 
 
     def test_mkdir(self):
+        now = datetime.now().replace(microsecond=0)
         name = self.random_name()
         self.client.mkdir(name)
-        info = self.client.get_info(name)
-        self.assertEquals(name, info['name'])
+
+        state = self.client.get_state(name)
+        self.assertEquals(name, state.path.split("/")[-1])
+        self.assertGreaterEqual(state.mtime, now)
+
         self.client.delete(name)
 
     def test_mkfile(self):
+        now = datetime.now().replace(microsecond=0)
         name = self.random_name()
         self.client.mkfile(name, self.TEST_CONTENT)
 
-        info = self.client.get_info(name)
-        self.assertEquals(name, info['name'])
+        state = self.client.get_state(name)
+        self.assertEquals(name, state.path.split("/")[-1])
+        self.assertGreaterEqual(state.mtime, now)
 
         content = self.client.get_content(name)
         self.assertEquals(self.TEST_CONTENT, content)
@@ -36,9 +43,14 @@ class AbstractClientTest(unittest.TestCase):
         name = self.random_name()
         self.client.mkfile(name)
 
+        now = datetime.now().replace(microsecond=0)
         self.client.update(name, self.TEST_CONTENT)
         content = self.client.get_content(name)
         self.assertEquals(self.TEST_CONTENT, content)
+
+        state = self.client.get_state(name)
+        self.assertGreaterEqual(state.mtime, now)
+
         self.client.delete(name)
 
     def random_name(self):

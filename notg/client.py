@@ -4,7 +4,10 @@
 from StringIO import StringIO
 import shutil
 import os
+from datetime import datetime
 from cmislib.model import CmisClient
+
+from synchronizer import State
 
 class Client(object):
     """Interface for clients."""
@@ -13,15 +16,8 @@ class Client(object):
         raise NotImplementedError
 
     # Getters
-    def get_info(self, path):
-        """Returns a dictionary of useful metadata or properties for the given object.
-
-        - type (folder or file)
-        - name
-
-        - last modification time [todo]
-        - md5 [todo]
-        """
+    def get_state(self, path):
+        """Returns a State object for the given object."""
         raise NotImplementedError
 
     def get_content(self, path):
@@ -54,26 +50,23 @@ class LocalClient(Client):
     def __init__(self, root):
         self.root = root
 
-    def get_tree(self):
-        pass
-
     # Getters
-    def get_info(self, path):
+    def get_state(self, path):
         os_path = os.path.join(self.root, path)
-        info = {}
         if os.path.isdir(os_path):
-            info['type'] = 'folder'
+            type = 'folder'
         else:
-            info['type'] = 'file'
-        name = os.path.split(os_path)[1]
-        info['name'] = name
-        return info
+            type = 'file'
+        stat_result = os.stat(os_path)
+        mtime = datetime.fromtimestamp(stat_result.st_mtime)
+        uid = str(stat_result.st_ino)
+        return State(path, uid, type, mtime)
 
     def get_content(self, path):
         fd = open(os.path.join(self.root, path), "rb")
         return fd.read()
 
-    def get_children(self, path):
+    def get_descendants(self, path):
         pass
 
     # Modifiers
@@ -130,18 +123,19 @@ class RemoteClient(Client):
             else:
                 child_path = path + "/" + child_name
 
-            if properties['cmis:baseTypeId'] == "cmis:folder":
-                result += [self.make_info(child_path, properties)] + self.get_descendants(child_path)
+            state = self.make_state(child_path, properties)
+            if state.type == 'folder':
+                result += [state] + self.get_descendants(child_path)
             else:
-                result += [self.make_info(child_path, properties)]
+                result += [state]
 
         return result
 
-    def get_info(self, path):
+    def get_state(self, path):
         remote_path = self.get_remote_path(path)        
         object = self.repo.getObjectByPath(remote_path)
         properties = object.properties
-        return self.make_info(path, properties)
+        return self.make_state(path, properties)
 
     def get_content(self, path):
         remote_path = self.get_remote_path(path)
@@ -187,13 +181,11 @@ class RemoteClient(Client):
         else:
             return self.base_folder
 
-    def make_info(self, path, properties):
-        info = {
-            'path': path,
-            'name': properties['cmis:name'],
-        }
-        if properties["cmis:baseTypeId"] == "cmis:folder":
-            info['type'] = 'folder'
+    def make_state(self, path, properties):
+        if properties['cmis:baseTypeId'] == 'cmis:folder':
+            type = 'folder'
         else:
-            info['type'] = 'file'
-        return info
+            type = 'file'
+        uid = properties['cmis:objectId']
+        mtime = properties['cmis:lastModificationDate']
+        return State(path, uid, type, mtime)

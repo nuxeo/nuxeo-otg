@@ -38,13 +38,13 @@ class LocalClient(object):
 class RemoteClient(object):
     """CMIS Client"""
 
-    def __init__(self, username, password, base_folder):
-        self.url = url
+    def __init__(self, repo_url, username, password, base_folder):
+        self.repo_url = repo_url
         self.username = username
         self.password = password
         self.base_folder = base_folder
 
-        self.client = CmisClient(url, username, password)
+        self.client = CmisClient(repo_url, username, password)
         self.remote_repo = self.client.getDefaultRepository()
 
 

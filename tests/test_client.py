@@ -58,12 +58,15 @@ class RemoteClientTest(AbstractClientTest):
     def setUp(self):
         self.client = RemoteClient(ROOT, USERNAME, PASSWORD, REMOTE_PATH)
 
-    def xxx(self):
+    def test_get_descendants(self):
         name = self.random_name()
         self.client.mkdir(name)
         self.client.mkdir(name + "/toto1")
         self.client.mkdir(name + "/toto2")
         self.client.mkfile(name + "/toto3")
 
-        self.assertEquals([], self.client.get_descendants(""))
+        descendants = self.client.get_descendants(name)
+        self.assertEquals(3, len(descendants))
+
+        self.client.delete(name)
 

@@ -27,6 +27,7 @@ class Synchronizer(object):
         self.fetch_state(self.local_client)
 
     def fetch_state(self, client):
+        
         pass
 
     #

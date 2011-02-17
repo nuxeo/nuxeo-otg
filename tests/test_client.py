@@ -70,7 +70,7 @@ class AbstractClientTest(unittest.TestCase):
     # Utility functions
     #
     def random_name(self):
-        return ("test-%f-%d" % (time.time(), random.randint(0, 1000000))).replace(".", "-")
+        return "test-%d-%d" % (int(time.time()), random.randint(0, 1000000))
 
 
 class LocalClientTest(AbstractClientTest):

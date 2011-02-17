@@ -1,4 +1,5 @@
 
+
 class State(object):
     """Data transfer object representing the state in one tree"""
 

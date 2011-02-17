@@ -1,4 +1,14 @@
 
+class State(object):
+    """Data transfer object representing the state in one tree"""
+
+    def __init__(self, path, type, mtime, digest):
+        self.path = path
+        self.type = type
+        self.mtime = mtime
+        self.digest = digest
+
+
 class Synchronizer(object):
 
     def __init__(self, local_client, remote_client):

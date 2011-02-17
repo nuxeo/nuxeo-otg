@@ -48,13 +48,13 @@ class ControllerTest(unittest.TestCase):
 
     def test_state_outside_attached_folder(self):
         ctl = self.controller
-        self.assertRaises(ValueError, ctl.state, '/somewhere/else')
+        self.assertRaises(ValueError, ctl.status, '/somewhere/else')
 
     def _test_create_one_local_file(self):
         ctl = self.controller
 
         # check for the status of a file that has never existed
-        self.assertEqual(ctl.state('file_1.txt'), 'unknown')
+        self.assertEqual(ctl.status('file_1.txt'), 'unknown')
 
         # the local user drop a text file
         with open(join(self.local_folder, 'file_1.txt'), 'wb') as f:
@@ -62,18 +62,18 @@ class ControllerTest(unittest.TestCase):
 
         # the controller did not refresh it's state hence still no pending
         # operations
-        self.assertEqual(ctl.state('file_1.txt'), 'unknown')
+        self.assertEqual(ctl.status('file_1.txt'), 'unknown')
 
         # ask for a status update on the synchronisation state of all files
         # and wait for the result
         ctl.refresh(async=False)
 
         # the new file has been detected
-        self.assertEqual(ctl.state('file_1.txt'), 'new')
+        self.assertEqual(ctl.status('file_1.txt'), 'new')
 
         # launch the syncronization and wait for the result
         ctl.syncronize(async=False)
-        self.assertEqual(ctl.state('file_1.txt'), 'up-to-date')
+        self.assertEqual(ctl.status('file_1.txt'), 'up-to-date')
 
         # check that the file has been created
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))

@@ -53,6 +53,21 @@ class AbstractClientTest(unittest.TestCase):
 
         self.client.delete(name)
 
+    def test_get_descendants(self):
+        name = self.random_name()
+        self.client.mkdir(name)
+        self.client.mkdir(name + "/toto1")
+        self.client.mkdir(name + "/toto2")
+        self.client.mkfile(name + "/toto3")
+
+        descendants = self.client.get_descendants(name)
+        self.assertEquals(3, len(descendants))
+
+        self.client.delete(name)
+
+    #
+    # Utility functions
+    #
     def random_name(self):
         return "test-%d" % random.randint(0, 1000000)
 
@@ -69,16 +84,4 @@ class RemoteClientTest(AbstractClientTest):
 
     def setUp(self):
         self.client = RemoteClient(ROOT, USERNAME, PASSWORD, REMOTE_PATH)
-
-    def test_get_descendants(self):
-        name = self.random_name()
-        self.client.mkdir(name)
-        self.client.mkdir(name + "/toto1")
-        self.client.mkdir(name + "/toto2")
-        self.client.mkfile(name + "/toto3")
-
-        descendants = self.client.get_descendants(name)
-        self.assertEquals(3, len(descendants))
-
-        self.client.delete(name)
 

@@ -52,7 +52,7 @@ class LocalClient(Client):
 
     # Getters
     def get_state(self, path):
-        os_path = os.path.join(self.root, path)
+        os_path = os.path.join(self.base_folder, path)
         if os.path.isdir(os_path):
             type = 'folder'
         else:
@@ -67,7 +67,16 @@ class LocalClient(Client):
         return fd.read()
 
     def get_descendants(self, path):
-        pass
+        os_path = os.path.join(self.base_folder, path)
+        result = []
+        for root, dirs, files in os.walk(os_path):
+            for dir in dirs:
+                path = os.path.join(os_path, dir)
+                result.append(self.get_state(path))
+            for file in files:
+                path = os.path.join(os_path, file)
+                result.append(self.get_state(path))
+        return result
 
     # Modifiers
     def mkdir(self, path):

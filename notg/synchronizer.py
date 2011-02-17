@@ -35,11 +35,11 @@ class Synchronizer(object):
         self.storage.update_remote_states(self.binding, new_states)
 
     def fetch_local_states(self):
-        self.fetch_states(self.local_client)
+        new_states = self.fetch_states(self.local_client)
         self.storage.update_local_states(self.binding, new_states)
 
     def fetch_states(self, client):
-        return []
+        return client.get_descendants("")
 
     #
     # Basic update operations

@@ -1,6 +1,7 @@
 """Clients implement a defined set of operations.
 
 """
+from StringIO import StringIO
 import shutil
 import os
 from cmislib.model import CmisClient
@@ -95,7 +96,7 @@ class RemoteClient(Client):
         self.base_folder = base_folder
 
         self.client = CmisClient(repo_url, username, password)
-        self.remote_repo = self.client.getDefaultRepository()
+        self.repo = self.client.getDefaultRepository()
 
 
     def get_tree(self):
@@ -103,16 +104,27 @@ class RemoteClient(Client):
 
     # Modifiers
     def mkdir(self, path):
-        pass
+        abs_path = self.get_abs_path(path)
+        parent_path, name = os.path.split(abs_path)
+        print parent_path
+        parent_folder = self.repo.getObjectByPath(parent_path)
+        parent_folder.createFolder(name)
 
     def mkfile(self, path, content=None):
-        pass
+        abs_path = self.get_abs_path(path)
+        parent_path, name = os.path.split(abs_path)
+        parent_folder = self.repo.getObjectByPath(parent_path)
+        content_file = StringIO(content)
+        parent_folder.createDocument(name, contentFile=content_file)
 
     def delete(self, path):
-        remotePath = self.base_folder + path
-        object = self.remote_repo.getObjectByPath(remotePath)
+        abs_path = self.get_abs_path(path)
+        object = self.repo.getObjectByPath(abs_path)
         # XXX: hack, fix later
         try:
             object.delete()
         except:
             object.deleteTree()
+
+    def get_abs_path(self, path):
+        return self.base_folder + path

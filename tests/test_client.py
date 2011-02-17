@@ -1,12 +1,9 @@
 import random
 import unittest
 from notg.client import LocalClient, RemoteClient
+from config import *
 
 LOCAL_PATH = "/tmp"
-
-ROOT = "http://cmis.demo.nuxeo.org/nuxeo/atom/cmis"
-REMOTE_PATH = "/default-domain"
-USERNAME = PASSWORD = "Administrator"
 
 
 class AbstractClientTest(unittest.TestCase):

@@ -3,6 +3,11 @@
 test: env
 	PYTHONPATH=`pwd` nosetests -w tests
 
+coverage: env
+	PYTHONPATH=`pwd` nosetests -w tests \
+			   --with-coverage --cover-package=notg --cover-html
+	open test/cover/index.html
+
 setup-env:
 	virtualenv env
 	./env/bin/pip install --upgrade -s -E env -r dependencies.txt

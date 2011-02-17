@@ -1,3 +1,4 @@
 cmislib
 nose
 watchdog
+coverage

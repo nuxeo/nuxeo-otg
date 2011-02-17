@@ -131,4 +131,4 @@ class RemoteClient(Client):
             object.deleteTree()
 
     def get_abs_path(self, path):
-        return self.base_folder + path
+        return self.base_folder + "/" + path

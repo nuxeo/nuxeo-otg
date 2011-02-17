@@ -10,36 +10,43 @@ class Client(object):
     """Interface for clients."""
 
     def get_tree(self):
-        pass
+        raise NotImplementedError
 
     # Getters
     def get_info(self, path):
-        pass
+        """Returns a dictionary of useful metadata or properties for the given object.
+
+        - type (folder or file)
+        - name
+
+        - last modification time [todo]
+        - md5 [todo]
+        """
+        raise NotImplementedError
 
     def get_content(self, path):
         """Returns file/document content as a string. Fix later to handle streaming."""
-        pass
+        raise NotImplementedError
 
     def get_children(self, path):
-        pass
+        raise NotImplementedError
 
     # Modifiers
     def mkdir(self, path):
         """Creates a directory or folder like object."""
-        pass
+        raise NotImplementedError
 
     def mkfile(self, path, content=None):
         """Creates a file-like object. Fill it with content if needed."""
-        pass
+        raise NotImplementedError
 
     def update(self, path, content):
         """Updates existing object with provided content and/or metadata."""
-        pass
+        raise NotImplementedError
 
     def delete(self, path):
         """Deletes object (recursively, if this is a folder."""
-        pass
-
+        raise NotImplementedError
 
 
 class LocalClient(Client):
@@ -58,6 +65,8 @@ class LocalClient(Client):
             info['type'] = 'folder'
         else:
             info['type'] = 'file'
+        name = os.path.split(os_path)[1]
+        info['name'] = name
         return info
 
     def get_content(self, path):
@@ -106,29 +115,53 @@ class RemoteClient(Client):
     def get_tree(self):
         pass
 
+    def get_info(self, path):
+        remote_path = self.get_remote_path(path)        
+        object = self.repo.getObjectByPath(remote_path)
+        properties = object.properties
+        info = {}
+        if properties["cmis:baseTypeId"] == "cmis:folder":
+            info['type'] = 'folder'
+        else:
+            info['type'] = 'file'
+        info['name'] = properties['cmis:name']
+        return info
+
+    def get_content(self, path):
+        remote_path = self.get_remote_path(path)
+        object = self.repo.getObjectByPath(remote_path)
+        return object.getContentStream().read()
+
     # Modifiers
     def mkdir(self, path):
-        abs_path = self.get_abs_path(path)
-        parent_path, name = os.path.split(abs_path)
+        remote_path = self.get_remote_path(path)
+        parent_path, name = os.path.split(remote_path)
         print parent_path
         parent_folder = self.repo.getObjectByPath(parent_path)
         parent_folder.createFolder(name)
 
     def mkfile(self, path, content=None):
-        abs_path = self.get_abs_path(path)
-        parent_path, name = os.path.split(abs_path)
+        remote_path = self.get_remote_path(path)
+        parent_path, name = os.path.split(remote_path)
         parent_folder = self.repo.getObjectByPath(parent_path)
         content_file = StringIO(content)
         parent_folder.createDocument(name, contentFile=content_file)
 
+    def update(self, path, content):
+        remote_path = self.get_remote_path(path)
+        object = self.repo.getObjectByPath(remote_path)
+        content_file = StringIO(content)
+        return object.setContentStream(content_file)
+        # TODO: manage also mime type
+
     def delete(self, path):
-        abs_path = self.get_abs_path(path)
-        object = self.repo.getObjectByPath(abs_path)
+        remote_path = self.get_remote_path(path)
+        object = self.repo.getObjectByPath(remote_path)
         # XXX: hack, fix later
         try:
             object.delete()
         except:
             object.deleteTree()
 
-    def get_abs_path(self, path):
+    def get_remote_path(self, path):
         return self.base_folder + "/" + path

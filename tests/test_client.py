@@ -10,20 +10,36 @@ class AbstractClientTest(unittest.TestCase):
     __test__ = False
     client = None
 
+    TEST_CONTENT = "Some content."
+
+
     def test_mkdir(self):
-        temp_dir_name = self.random_name()
-        self.client.mkdir(temp_dir_name)
-        self.client.delete(temp_dir_name)
+        name = self.random_name()
+        self.client.mkdir(name)
+        info = self.client.get_info(name)
+        self.assertEquals(name, info['name'])
+        self.client.delete(name)
 
     def test_mkfile(self):
-        temp_file_name = self.random_name()
-        self.client.mkfile(temp_file_name)
-        self.client.delete(temp_file_name)
+        name = self.random_name()
+        self.client.mkfile(name, self.TEST_CONTENT)
+
+        info = self.client.get_info(name)
+        self.assertEquals(name, info['name'])
+
+        content = self.client.get_content(name)
+        self.assertEquals(self.TEST_CONTENT, content)
+
+        self.client.delete(name)
 
     def test_update(self):
-        temp_file_name = self.random_name()
-        self.client.mkfile(temp_file_name)
-        self.client.delete(temp_file_name)
+        name = self.random_name()
+        self.client.mkfile(name)
+
+        self.client.update(name, self.TEST_CONTENT)
+        content = self.client.get_content(name)
+        self.assertEquals(self.TEST_CONTENT, content)
+        self.client.delete(name)
 
     def random_name(self):
         return "test-%d" % random.randint(0, 1000000)

@@ -1,13 +1,12 @@
 """Clients implement a defined set of operations.
 
 """
+import shutil
 import os
 from cmislib.model import CmisClient
 
-class LocalClient(object):
-
-    def __init__(self, root):
-        self.root = root
+class Client(object):
+    """Interface for clients."""
 
     def get_tree(self):
         pass
@@ -17,7 +16,48 @@ class LocalClient(object):
         pass
 
     def get_stream(self, path):
+        """Returns file content (stream) as a string. Fix later."""
         pass
+
+    def get_children(self, path):
+        pass
+
+    # Modifiers
+    def mkdir(self, path):
+        """Creates a directory or folder like object."""
+        pass
+
+    def mkfile(self, path, content=None):
+        """Creates a file-like object. Fill it with content if needed."""
+        pass
+
+    def update(self, path, content):
+        """Updates existing object with provided content and/or metadata."""
+        pass
+
+    def delete(self, path):
+        """Deletes object (recursively, if this is a folder."""
+        pass
+
+
+
+class LocalClient(Client):
+
+    def __init__(self, root):
+        self.root = root
+
+    def get_tree(self):
+        pass
+
+    # Getters
+    def get_info(self, path):
+        fd = open(os.path.join(self.root, path), "wcb")
+
+        pass
+
+    def get_stream(self, path):
+        fd = open(os.path.join(self.root, path), "b")
+        return fd.read()
 
     def get_children(self, path):
         pass
@@ -33,17 +73,19 @@ class LocalClient(object):
         fd.close()
 
     def update(self, path, content):
-        pass
+        fd = open(os.path.join(self.root, path), "wb")
+        fd.write(content)
+        fd.close()
 
     def delete(self, path):
         os_path = os.path.join(self.root, path)
         if os.path.isfile(os_path):
             os.unlink(os_path)
         else:
-            os.rmdir(os_path)
+            shutil.rmtree(os_path)
 
 
-class RemoteClient(object):
+class RemoteClient(Client):
     """CMIS Client"""
 
     def __init__(self, repo_url, username, password, base_folder):
@@ -63,7 +105,7 @@ class RemoteClient(object):
     def mkdir(self, path):
         pass
 
-    def mkfile(self, path):
+    def mkfile(self, path, content=None):
         pass
 
     def delete(self, path):

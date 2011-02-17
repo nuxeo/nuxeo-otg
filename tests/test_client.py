@@ -22,6 +22,11 @@ class AbstractClientTest(unittest.TestCase):
         self.client.mkfile(tmpfile)
         self.client.delete(tmpfile)
 
+    def test_update(self):
+        tmpfile = tempfile.mktemp()
+        self.client.mkfile(tmpfile)
+        self.client.delete(tmpfile)
+
 
 class LocalClientTest(AbstractClientTest):
     __test__ = True

@@ -10,8 +10,17 @@ class Synchronizer(object):
         """Returns list of operations needed to bring both trees in sync."""
         pass
 
+    def fetch_remote_state(self):
+        self.fetch_state(self.remote_client)
+
+    def fetch_local_state(self):
+        self.fetch_state(self.local_client)
+
+    def fetch_state(self, client):
+        pass
+
     #
-    # Basic operations
+    # Basic update operations
     #
     def push(self, path):
         pass

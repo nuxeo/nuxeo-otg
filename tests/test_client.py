@@ -1,18 +1,34 @@
 import unittest
-from notg.client import Client
+from unittest.case import skip
+from notg.client import LocalClient, RemoteClient
 
 ROOT = "http://localhost:8080/nuxeo"
+PATH = "/tmp"
 USERNAME = PASSWORD = "Administrator"
 
 
 class ClientTest(unittest.TestCase):
 
-    def setUp(self):
-        self.client = Client(ROOT, USERNAME, PASSWORD)
-
     def test(self):
-        pass
+        raise "Error"
 
 
-if __name__ == '__main__':
-    unittest.main()
+class LocalClientTest(ClientTest):
+
+    def setUp(self):
+        self.client = LocalClient(PATH)
+
+
+class RemoteClientTest(ClientTest):
+
+    def setUp(self):
+        self.client = RemoteClient(ROOT, USERNAME, PASSWORD, PATH)
+
+
+#def suite():
+#    suite1 = unittest.TestLoader().loadTestsFromTestCase(LocalClientTest)
+#    suite2 = unittest.TestLoader().loadTestsFromTestCase(RemoteClientTest)
+#    return unittest.TestSuite([suite1, suite2])
+
+#if __name__ == '__main__':
+#    unittest.TextTestRunner(verbosity=2).run(suite)

@@ -2,8 +2,9 @@
 class State(object):
     """Data transfer object representing the state in one tree"""
 
-    def __init__(self, path, type, mtime, digest):
+    def __init__(self, path, uid, type, mtime, digest=None):
         self.path = path
+        self.uid = uid
         self.type = type
         self.mtime = mtime
         self.digest = digest
@@ -11,24 +12,25 @@ class State(object):
 
 class Synchronizer(object):
 
-    def __init__(self, local_client, remote_client):
+    def __init__(self, storage, local_client, remote_client):
+        self.storage = storage
         self.local_client = local_client
         self.remote_client = remote_client
-
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync."""
         pass
 
-    def fetch_remote_state(self):
-        self.fetch_state(self.remote_client)
+    def fetch_remote_states(self):
+        new_states = self.fetch_states(self.remote_client)
+        self.storage.update_remote_states(new_states)
 
-    def fetch_local_state(self):
-        self.fetch_state(self.local_client)
+    def fetch_local_states(self):
+        self.fetch_states(self.local_client)
+        self.storage.update_local_states(new_states)
 
-    def fetch_state(self, client):
-        
-        pass
+    def fetch_states(self, client):
+        return []
 
     #
     # Basic update operations

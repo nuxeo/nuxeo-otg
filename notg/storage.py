@@ -14,10 +14,12 @@ class Binding(object):
 
 class CompoundState(object):
 
+    local_uid = None
     local_state = 'unknown'
     local_mdate = None
     local_digest = None
 
+    remote_uid = None
     remote_state = 'unknown'
     remote_mdate = None
     remote_digest = None

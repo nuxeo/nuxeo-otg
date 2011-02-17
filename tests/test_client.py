@@ -1,6 +1,7 @@
-from datetime import datetime
 import random
 import unittest
+import time
+from datetime import datetime
 from notg.client import LocalClient, RemoteClient
 from config import *
 
@@ -69,7 +70,7 @@ class AbstractClientTest(unittest.TestCase):
     # Utility functions
     #
     def random_name(self):
-        return "test-%d" % random.randint(0, 1000000)
+        return ("test-%f-%d" % (time.time(), random.randint(0, 1000000))).replace(".", "-")
 
 
 class LocalClientTest(AbstractClientTest):

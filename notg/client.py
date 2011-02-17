@@ -102,15 +102,14 @@ class LocalClient(Client):
 class RemoteClient(Client):
     """CMIS Client"""
 
-    def __init__(self, repo_url, username, password, base_folder):
-        self.repo_url = repo_url
+    def __init__(self, repository_url, username, password, base_folder):
+        self.repository_url = repository_url
         self.username = username
         self.password = password
         self.base_folder = base_folder
 
-        self.client = CmisClient(repo_url, username, password)
+        self.client = CmisClient(repository_url, username, password)
         self.repo = self.client.getDefaultRepository()
-
 
     def get_descendants(self, path=""):
         result = []

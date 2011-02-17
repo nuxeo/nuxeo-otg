@@ -17,17 +17,26 @@ class Synchronizer(object):
         self.local_client = local_client
         self.remote_client = remote_client
 
+        self.binding = self.storage.get_binding(local_client.base_folder)
+        if self.binding is None:
+            self.binding = self.storage.add_binding(
+                local_client.base_folder, remote_client.base_folder,
+                getattr(remote_client, 'repository_url', None),
+                getattr(remote_client, 'username', None),
+                getattr(remote_client, 'password', None))
+
+
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync."""
         pass
 
     def fetch_remote_states(self):
         new_states = self.fetch_states(self.remote_client)
-        self.storage.update_remote_states(new_states)
+        self.storage.update_remote_states(self.binding, new_states)
 
     def fetch_local_states(self):
         self.fetch_states(self.local_client)
-        self.storage.update_local_states(new_states)
+        self.storage.update_local_states(self.binding, new_states)
 
     def fetch_states(self, client):
         return []

@@ -45,8 +45,10 @@ class Storage(object):
                              " '%s/%s'" % (local_folder, b.local_folder,
                                            b.repository_url, b.remote_folder))
 
-        self.bindings.append(Binding(local_folder, remote_folder,
-                                     repository_url, username, password))
+        binding = Binding(local_folder, remote_folder, repository_url,
+                          username, password)
+        self.bindings.append(binding)
+        return binding
 
     def list_bindings(self):
         return self.bindings[:]

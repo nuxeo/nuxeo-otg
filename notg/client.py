@@ -28,7 +28,7 @@ class Client(object):
         """Returns file/document content as a string. Fix later to handle streaming."""
         raise NotImplementedError
 
-    def get_children(self, path):
+    def get_descendants(self, path):
         raise NotImplementedError
 
     # Modifiers
@@ -45,7 +45,7 @@ class Client(object):
         raise NotImplementedError
 
     def delete(self, path):
-        """Deletes object (recursively, if this is a folder."""
+        """Deletes object (recursively, if this is a folder)."""
         raise NotImplementedError
 
 
@@ -121,18 +121,19 @@ class RemoteClient(Client):
         children = object.getChildren()
         for child in children:
             properties = child.properties
+            # Hack around some Nuxeo quirks
             child_name = properties['cmis:name']
+            if properties.has_key('cmis:path'):
+                child_name = properties['cmis:path'].split('/')[-1]
             if path == "":
                 child_path = child_name
             else:
                 child_path = path + "/" + child_name
 
-            print child_path
-
             if properties['cmis:baseTypeId'] == "cmis:folder":
-                result += self.get_descendants(child_path)
+                result += [self.make_info(child_path, properties)] + self.get_descendants(child_path)
             else:
-                result += [child_path]
+                result += [self.make_info(child_path, properties)]
 
         return result
 
@@ -140,13 +141,7 @@ class RemoteClient(Client):
         remote_path = self.get_remote_path(path)        
         object = self.repo.getObjectByPath(remote_path)
         properties = object.properties
-        info = {}
-        if properties["cmis:baseTypeId"] == "cmis:folder":
-            info['type'] = 'folder'
-        else:
-            info['type'] = 'file'
-        info['name'] = properties['cmis:name']
-        return info
+        return self.make_info(path, properties)
 
     def get_content(self, path):
         remote_path = self.get_remote_path(path)
@@ -157,7 +152,6 @@ class RemoteClient(Client):
     def mkdir(self, path):
         remote_path = self.get_remote_path(path)
         parent_path, name = os.path.split(remote_path)
-        print parent_path
         parent_folder = self.repo.getObjectByPath(parent_path)
         parent_folder.createFolder(name)
 
@@ -184,8 +178,22 @@ class RemoteClient(Client):
         except:
             object.deleteTree()
 
+    #
+    # Utilities
+    #
     def get_remote_path(self, path):
         if path != "":
             return self.base_folder + "/" + path
         else:
             return self.base_folder
+
+    def make_info(self, path, properties):
+        info = {
+            'path': path,
+            'name': properties['cmis:name'],
+        }
+        if properties["cmis:baseTypeId"] == "cmis:folder":
+            info['type'] = 'folder'
+        else:
+            info['type'] = 'file'
+        return info

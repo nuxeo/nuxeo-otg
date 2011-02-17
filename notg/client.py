@@ -112,8 +112,29 @@ class RemoteClient(Client):
         self.repo = self.client.getDefaultRepository()
 
 
-    def get_tree(self):
-        pass
+    def get_descendants(self, path=""):
+        result = []
+
+        remote_path = self.get_remote_path(path)
+        object = self.repo.getObjectByPath(remote_path)
+        
+        children = object.getChildren()
+        for child in children:
+            properties = child.properties
+            child_name = properties['cmis:name']
+            if path == "":
+                child_path = child_name
+            else:
+                child_path = path + "/" + child_name
+
+            print child_path
+
+            if properties['cmis:baseTypeId'] == "cmis:folder":
+                result += self.get_descendants(child_path)
+            else:
+                result += [child_path]
+
+        return result
 
     def get_info(self, path):
         remote_path = self.get_remote_path(path)        
@@ -164,4 +185,7 @@ class RemoteClient(Client):
             object.deleteTree()
 
     def get_remote_path(self, path):
-        return self.base_folder + "/" + path
+        if path != "":
+            return self.base_folder + "/" + path
+        else:
+            return self.base_folder

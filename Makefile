@@ -4,9 +4,11 @@ test: env
 	PYTHONPATH=`pwd` nosetests -w tests
 
 coverage: env
+	rm -f .coverage
 	PYTHONPATH=`pwd` nosetests -w tests \
-			   --with-coverage --cover-package=notg --cover-html
-	open test/cover/index.html
+	   --with-coverage --cover-package=notg \
+	   --cover-html --cover-html-dir=`pwd`/cover
+	open cover/index.html
 
 setup-env:
 	virtualenv env

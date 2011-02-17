@@ -11,6 +11,12 @@ class State(object):
 
 
 class Synchronizer(object):
+    """Utility to compare abstract filesystem trees and update the storage
+
+    The synchronizer is in charge of instrospecting the trees, updating
+    the metadata in the storage, compute the list of synchronization
+    operations and perform the file transfers.
+    """
 
     def __init__(self, storage, local_client, remote_client):
         self.storage = storage
@@ -24,7 +30,6 @@ class Synchronizer(object):
                 getattr(remote_client, 'repository_url', None),
                 getattr(remote_client, 'username', None),
                 getattr(remote_client, 'password', None))
-
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync."""

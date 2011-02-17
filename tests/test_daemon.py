@@ -31,7 +31,7 @@ class DaemonTest(unittest.TestCase):
         if self.client.exists(TEST_WORKSPACE):
             self.client.delete(TEST_WORKSPACE)
 
-        self.client.create(TEST_WORKSPACE, type='Workspace')
+        self.client.create(TEST_WORKSPACE, 'Workspace')
 
         # attache the local and remote folders
         self.daemon.attach(self.local_folder, REPO_URL,
@@ -66,6 +66,8 @@ class DaemonTest(unittest.TestCase):
         self.assertEqual(len(children), 1)
 
         self.assertEqual(children[0].name, 'file_1.txt')
+        self.assertEqual(children[0].get_content().read(),
+                         "This is the content of a text file.\n")
 
     def test_create_one_remote_file(self):
         d = self.daemon
@@ -73,8 +75,8 @@ class DaemonTest(unittest.TestCase):
 
         # the users create a set a of new file on the server
         c = self.client
-        c.create(TEST_WORKSPACE + '/file_1.txt', type='File',
-                 content='This is the content of the server file.\n')
+        c.create_file(TEST_WORKSPACE + '/file_1.txt',
+                      content='This is the content of the server file.\n')
 
         # one operation to perform
         self.assertEqual(len(d.pending_operations()), 1)
@@ -90,5 +92,4 @@ class DaemonTest(unittest.TestCase):
         with open(local_files[0], 'r') as f:
             self.assertEqual(
                 f.read(), 'This is the content of the server file.\n')
-
 

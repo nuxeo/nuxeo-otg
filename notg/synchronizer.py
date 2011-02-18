@@ -114,10 +114,10 @@ class Synchronizer(object):
             # save the change
             self.storage.set_state(self.binding, path, compound_state)
 
-
     #
     # Basic update operations
     #
+
     def push(self, path):
         self.log("Pushing object with path: %s" % path)
         state = self.local_client.get_state(path)

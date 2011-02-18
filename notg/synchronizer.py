@@ -4,6 +4,7 @@ from notg.storage import Info
 from notg.storage import CompoundState
 from notg.client import LocalClient
 from notg.client import RemoteClient
+from notg.notification import notify
 
 
 class Synchronizer(object):
@@ -141,6 +142,7 @@ class Synchronizer(object):
 
     def push(self, path):
         logging.info("Pushing object with path: %s" % path)
+        notify("", "Pushing file to server", "with path %s" % path)
         info = self.local_client.get_state(path)
 
         # transfer the content
@@ -160,6 +162,8 @@ class Synchronizer(object):
 
     def pull(self, path):
         logging.info("Pulling object with path: %s" % path)
+        notify("", "Pulling file from server", "with path %s" % path)
+
         info = self.remote_client.get_state(path)
 
         # transfer the content
@@ -179,11 +183,13 @@ class Synchronizer(object):
 
     def delete_remote(self, path):
         logging.info("Deleting remote object with path: %s" % path)
+        notify("", "Deleting remote file", "with path %s" % path)
         self.remote_client.delete(path)
         self.storage.delete_state(self.binding, state)
 
     def delete_local(self, path):
-        logging.info("Deleting remote object with path: %s" % path)
+        logging.info("Deleting local object with path: %s" % path)
+        notify("", "Deleting local file", "with path %s" % path)
         self.local_client.delete(path)
         self.storage.delete_state(self.binding, state)
 

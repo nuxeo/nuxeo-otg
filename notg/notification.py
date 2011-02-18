@@ -23,7 +23,7 @@ class Notifier(object):
         raise NotImplementedError
 
 
-class GrowlNotifier(Notifier):
+class BrokenGrowlNotifier(Notifier):
 
     def __init__(self):
         self.has_growl = self.is_growl_running()
@@ -76,9 +76,13 @@ class GrowlNotifier(Notifier):
         else:
             return out
 
+# Hack for now
+class GrowlNotifier(Notifier):
+    def notify(self, type, title, msg):
+        subprocess.Popen(['growlnotify', '-t', title, '-m', msg])
+
 
 class LibnotifyNotifier(Notifier):
-
     def notify(self, type, title, msg):
         if pynotify:
             n = pynotify.Notification(title, msg)
@@ -106,10 +110,10 @@ class NullNotifier(object):
 
 if sys.platform == "darwin":
     notifier = GrowlNotifier()
-elif sys.platform == "linux":
-    notifier = LibnotifyNotifier()
-elif sys.platform == "win32":
-    notifier = Win32Notifier()
+#elif sys.platform == "linux":
+#    notifier = LibnotifyNotifier()
+#elif sys.platform == "win32":
+#    notifier = Win32Notifier()
 else:
     notifier = NullNotifier()
 

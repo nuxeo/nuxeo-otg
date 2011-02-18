@@ -1,6 +1,6 @@
 import threading
 
-from pyzen.ui.win32.types import *
+from types import *
 
 def load_icon(name):
     return LoadImage(None, img_path(name), IMAGE_ICON, 16, 16, LR_LOADFROMFILE)

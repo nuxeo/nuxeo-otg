@@ -1,4 +1,6 @@
 from notg.storage import Info
+from notg.client import LocalClient
+from notg.client import RemoteClient
 
 class Synchronizer(object):
     """Utility to compare abstract filesystem trees and update the storage
@@ -8,18 +10,35 @@ class Synchronizer(object):
     operations and perform the file transfers.
     """
 
-    def __init__(self, storage, local_client, remote_client):
+    def __init__(self, storage, local_client=None, remote_client=None,
+                 binding=None):
         self.storage = storage
-        self.local_client = local_client
-        self.remote_client = remote_client
 
-        self.binding = self.storage.get_binding(local_client.base_folder)
-        if self.binding is None:
-            self.binding = self.storage.add_binding(
-                local_client.base_folder, remote_client.base_folder,
-                getattr(remote_client, 'repository_url', None),
-                getattr(remote_client, 'username', None),
-                getattr(remote_client, 'password', None))
+        if binding is not None:
+            self.binding = b = binding
+            self.local_client = LocalClient(b.local_folder)
+            if binding.repository_url is not None:
+                self.remote_client = RemoteClient(
+                    b.remote_folder, repository_url=b.repository_url,
+                    username=b.username, password=b.password)
+            else:
+                # 'local' remote client to be used for tests only
+                self.remote_client = LocalClient(b.remote_folder)
+
+        elif local_client is not None and remote_client is not None:
+            self.local_client = local_client
+            self.remote_client = remote_client
+
+            self.binding = self.storage.get_binding(local_client.base_folder)
+            if self.binding is None:
+                self.binding = self.storage.add_binding(
+                    local_client.base_folder, remote_client.base_folder,
+                    getattr(remote_client, 'repository_url', None),
+                    getattr(remote_client, 'username', None),
+                    getattr(remote_client, 'password', None))
+        else:
+            raise ValueError("Either a binding or a clients pair must be"
+                             " provided")
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync."""

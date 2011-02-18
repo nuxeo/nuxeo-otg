@@ -1,5 +1,6 @@
 
 from notg.storage import Storage
+from notg.synchronizer import Synchronizer
 import os
 
 class Controller(object):
@@ -30,12 +31,6 @@ class Controller(object):
 
         # TODO: check if synchronizer process is live
 
-    def start_synchronizer(self):
-        pass
-
-    def stop_synchronizer(self):
-        pass
-
     def attach(self, local_folder, remote_folder, repository_url=None,
                username=None, password=None):
         self.storage.add_binding(local_folder, remote_folder,
@@ -43,9 +38,10 @@ class Controller(object):
                                  username=username, password=password)
 
     def list_bindings(self):
-        pass
+        return self.storage.list_bindings()
 
     def detach(self, local_folder):
+        # TODO: implement me
         pass
 
     def split_path(self, local_path):
@@ -65,5 +61,13 @@ class Controller(object):
         return self.storage.get_state(binding, path).local_state
 
     def refresh(self, local_folder=None, async=True):
-        pass
+        if async:
+            # TODO queue a command to synchronizer process
+            pass
+        else:
+            # perform synchronization right away
+            for b in self.list_bindings():
+                sync = Synchronizer(self.storage, binding=b)
+                sync.update_local_info()
+                sync.update_remote_info()
 

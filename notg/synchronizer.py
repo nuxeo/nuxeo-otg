@@ -1,3 +1,5 @@
+import logging
+
 from notg.storage import Info
 from notg.storage import CompoundState
 from notg.client import LocalClient
@@ -59,6 +61,7 @@ class Synchronizer(object):
         old_states = self.storage.get_states(self.binding)
 
         other = 'remote' if tree == 'local' else 'local'
+        logging.info("refreshing state for: %s", tree)
 
         for new_info in new_infos:
             path = new_info.path
@@ -70,18 +73,18 @@ class Synchronizer(object):
             other_old_info = compound_state.get_info(other)
 
             if old_info is None:
-                compound_state.set_info(tree, new_info)
                 if other_old_info is not None:
                     # this is a first scan after an attachment: assumed
                     # documents are the same by default: this would require
                     # digest access to ensure that this is true. If not true we
                     # sould trigger the conflict resolution mechanism instead
+                    compound_state.set_info(tree, new_info)
                     compound_state.set_state(tree, 'synchronized')
                     compound_state.set_state(other, 'synchronized')
                 else:
                     # leave the state to unknown while waiting for other info to
                     # come in
-                    pass
+                    compound_state.set_info(tree, new_info)
             else:
                 # detect modifications to propagate
                 if new_info.mtime > old_info.mtime:
@@ -106,7 +109,7 @@ class Synchronizer(object):
             else:
                 # we do not have any old info on this document, this is a
                 # new document from the other side
-                compound_state.set_info(other, 'created')
+                compound_state.set_state(other, 'created')
 
             # save the change
             self.storage.set_state(self.binding, path, compound_state)

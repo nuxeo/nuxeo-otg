@@ -68,11 +68,11 @@ class ControllerTest(unittest.TestCase):
         ctl.refresh(async=False)
 
         # the new file has been detected
-        self.assertEqual(ctl.status('file_1.txt'), 'new')
+        self.assertEqual(ctl.status('file_1.txt'), 'created')
 
         # launch the synchronization and wait for the result
         ctl.synchronize(async=False)
-        self.assertEqual(ctl.status('file_1.txt'), 'up-to-date')
+        self.assertEqual(ctl.status('file_1.txt'), 'synchronized')
 
         # check that the file has been created
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))

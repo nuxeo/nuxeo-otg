@@ -1,7 +1,8 @@
+import os
+import logging
 
 from notg.storage import Storage
 from notg.synchronizer import Synchronizer
-import os
 
 class Controller(object):
     """Main public API for user level operations.

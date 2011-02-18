@@ -1,5 +1,6 @@
 
 import os
+import logging
 
 class Binding(object):
 
@@ -49,13 +50,22 @@ class CompoundState(object):
         return getattr(self, tree + '_info')
 
     def set_info(self, tree, info):
+        logging.info("store info for '%s/%s': %r" % (tree, self.path, info))
         setattr(self, tree + '_info', info)
 
     def get_state(self, tree):
         return getattr(self, tree + '_state')
 
     def set_state(self, tree, state):
+        logging.info("mark '%s/%s' as '%s'" % (tree, self.path, state))
         setattr(self, tree + '_state', state)
+
+    def __repr__(self):
+        return ('CompoundState with:\n'
+                '  local:\t(%r, %r)\n'
+                '  remote:\t(%r, %r)' % (
+                    self.local_state, self.local_info,
+                    self.remote_state, self.remote_info))
 
 
 class Storage(object):

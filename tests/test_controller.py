@@ -49,7 +49,7 @@ class ControllerTest(unittest.TestCase):
         ctl = self.controller
         self.assertRaises(ValueError, ctl.status, '/somewhere/else')
 
-    def _test_create_one_local_file(self):
+    def test_create_one_local_file(self):
         ctl = self.controller
 
         # check for the status of a file that has never existed
@@ -76,6 +76,6 @@ class ControllerTest(unittest.TestCase):
 
         # check that the file has been created
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))
-        with open(join(self.remote_folder, 'file_1.txt'), 'wb') as f:
+        with open(join(self.remote_folder, 'file_1.txt'), 'rb') as f:
             self.assertEqual(f.read(), 'This is the content of a text file.\n')
 

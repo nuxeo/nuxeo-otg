@@ -140,34 +140,50 @@ class Synchronizer(object):
     #
 
     def push(self, path):
-        self.log("Pushing object with path: %s" % path)
+        logging.info("Pushing object with path: %s" % path)
         info = self.local_client.get_state(path)
+
+        # transfer the content
         if info.type == 'folder':
             self.remote_client.mkdir(path)
         else:
             content = self.local_client.get_content(path)
             self.remote_client.mkfile(path, content)
 
+        # update the metadata
+        state = self.storage.get_state(self.binding, path)
+        state.set_state('local', 'synchronized')
+        state.set_state('remote', 'synchronized')
+        new_info = self.remote_client.get_state(path)
+        state.set_state('remote', new_info)
+        self.storage.set_state(self.binding, path, state)
+
     def pull(self, path):
-        self.log("Pulling object with path: %s" % path)
+        logging.info("Pulling object with path: %s" % path)
         info = self.remote_client.get_state(path)
+
+        # transfer the content
         if info.type == 'folder':
             self.local_client.mkdir(path)
         else:
             content = self.remote_client.get_content(path)
             self.local_client.mkfile(path, content)
 
+        # update the metadata
+        state = self.storage.get_state(self.binding, path)
+        state.set_state('local', 'synchronized')
+        state.set_state('remote', 'synchronized')
+        new_info = self.local_client.get_state(path)
+        state.set_state('local', new_info)
+        self.storage.set_state(self.binding, path, state)
+
     def delete_remote(self, path):
-        self.log("Deleting remote object with path: %s" % path)
+        logging.info("Deleting remote object with path: %s" % path)
         self.remote_client.delete(path)
+        self.storage.delete_state(self.binding, state)
 
     def delete_local(self, path):
-        self.log("Deleting remote object with path: %s" % path)
+        logging.info("Deleting remote object with path: %s" % path)
         self.local_client.delete(path)
+        self.storage.delete_state(self.binding, state)
 
-
-    #
-    # Utility functions
-    #
-    def log(self, msg):
-        print msg

@@ -109,6 +109,6 @@ class Storage(object):
         return dict((p, s) for (b, p), s in self.states.iteritems()
                     if b == binding)
 
-    def delete_state(self, binding, state):
+    def delete_state(self, binding, path):
         del self.states[(binding, path)]
 

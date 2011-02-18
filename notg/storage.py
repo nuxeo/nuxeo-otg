@@ -28,6 +28,10 @@ class Info(object):
         self.mtime = mtime
         self.digest = digest
 
+    def __repr__(self):
+        return "Info(%r, %r, %r, %r, %r)" % (
+            self.path, self.uid, self.type, self.mtime, self.digest)
+
 
 class CompoundState(object):
     """Stored metadata for each tree node to be synchronized"""

@@ -82,7 +82,6 @@ class ControllerTest(unittest.TestCase):
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))
         with open(join(self.remote_folder, 'file_1.txt'), 'rb') as f:
             self.assertEqual(f.read(), 'This is the content of a text file.\n')
-        from datetime import datetime
 
         # edit the view on the remote folder
         remote_file_path = join(self.remote_folder, 'file_1.txt')

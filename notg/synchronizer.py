@@ -45,7 +45,29 @@ class Synchronizer(object):
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync"""
-        pass
+        # TODO: implement me!
+        return []
+
+    def synchronize_all(self):
+        """Perform blocking synchronization"""
+        # TODO: refactor me to make it a two stages process to allow for
+        # queue-based non-blocking asynchronous processing
+
+        # TODO: simplify deletions: handle sub trees
+
+        states = self.storage.get_states(self.binding).items()
+
+        # sort by path names to create folders before
+        states.sort()
+        for path, state in states:
+            if state.local_state in ('created', 'modified'):
+                self.push(path)
+            elif state.remote_state in ('created', 'modified'):
+                self.pull(path)
+            elif state.local_state == 'deleted':
+                self.delete_remote(path)
+            elif state.remote_state == 'deleted':
+                self.delete_local(path)
 
     def update_local_info(self):
         new_infos = self.local_client.get_descendants()
@@ -119,8 +141,8 @@ class Synchronizer(object):
 
     def push(self, path):
         self.log("Pushing object with path: %s" % path)
-        state = self.local_client.get_state(path)
-        if state.type == 'folder':
+        info = self.local_client.get_state(path)
+        if info.type == 'folder':
             self.remote_client.mkdir(path)
         else:
             content = self.local_client.get_content(path)
@@ -128,8 +150,8 @@ class Synchronizer(object):
 
     def pull(self, path):
         self.log("Pulling object with path: %s" % path)
-        state = self.remote_client.get_state(path)
-        if state.type == 'folder':
+        info = self.remote_client.get_state(path)
+        if info.type == 'folder':
             self.local_client.mkdir(path)
         else:
             content = self.remote_client.get_content(path)

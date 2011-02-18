@@ -92,5 +92,5 @@ class Controller(object):
             # perform synchronization right away
             for b in bindings:
                 sync = Synchronizer(self.storage, binding=b)
-                # TODO: implement me
+                sync.synchronize_all()
 

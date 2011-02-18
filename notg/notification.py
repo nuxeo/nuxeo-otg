@@ -7,7 +7,6 @@
 
 import subprocess
 import sys
-import os
 
 try:
     import pynotify
@@ -111,10 +110,10 @@ class NullNotifier(object):
 
 if sys.platform == "darwin":
     notifier = GrowlNotifier()
-elif sys.platform == "linux":
-    notifier = LibnotifyNotifier()
-elif sys.platform == "win32":
-    notifier = Win32Notifier()
+#elif sys.platform == "linux":
+#    notifier = LibnotifyNotifier()
+#elif sys.platform == "win32":
+#    notifier = Win32Notifier()
 else:
     notifier = NullNotifier()
 

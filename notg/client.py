@@ -96,9 +96,11 @@ class LocalClient(Client):
     def delete(self, path):
         os_path = os.path.join(self.base_folder, path)
         if os.path.isfile(os_path):
-            os.unlink(os_path)
+            pass
+            #os.unlink(os_path)
         else:
-            shutil.rmtree(os_path)
+            pass
+            #shutil.rmtree(os_path)
 
 
 class RemoteClient(Client):

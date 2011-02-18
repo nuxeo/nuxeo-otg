@@ -102,30 +102,54 @@ class Storage(object):
         other = 'remote' if tree == 'local' else 'local'
 
         for new_info in new_infos:
+            path = new_info.path
+
             compound_state = old_states.setdefault(
-                new_info.path, CompoundState(binding, new_info.path))
+                path, CompoundState(binding, path))
 
             old_info = compound_state.get_info(tree)
             other_old_info = compound_state.get_info(other)
 
             if old_info is None:
-                compound_state.set_info(new_info)
+                compound_state.set_info(tree, new_info)
                 if other_old_info is not None:
+                    # this is a first scan after an attachment: assumed
+                    # documents are the same by default: this would require
+                    # digest access to ensure that this is true. If not true we
+                    # sould trigger the conflict resolution mechanism instead
+                    compound_state.set_state(tree, 'synchronized')
+                    compound_state.set_state(other, 'synchronized')
+                else:
+                    # leave the state to unknown while waiting for other info to
+                    # come in
                     pass
-                # TODO: implement me
             else:
-                if old_info.mtime == new_info.mtime:
-                    pass
-                # TODO: implement me
+                # detect modifications to propagate
+                if new_info.mtime > old_info.mtime:
+                    # this is a modified document
+                    compound_state.set_state(tree, 'modified')
+                    compound_state.set_info(tree, new_info)
 
+            # save back change to storage
+            self.set_state(binding, path, compound_state)
+
+            # remove from the list of collected states to be able to detect
+            # deletions
             del old_states[new_info.path]
 
+        # remaining states can be deletions or new file created on the other
+        # side
         for path, compound_state in old_states.iteritems():
             if old_info.get(tree) is not None:
+                # mark old path no longer present in the tree as deleted
                 compound_state.set_state(tree, 'deleted')
                 compound_state.set_info(tree, None)
-            # mark old state no longer present in the tree as deleted
-            # TODO implement me
+            else:
+                # we do not have any old info on this document, this is a
+                # new document from the other side
+                compound_state.set_info(other, 'created')
 
+            # save the change
+            self.set_state(binding, path, compound_state)
 
 

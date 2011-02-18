@@ -3,4 +3,6 @@ syntax:glob
 env
 *.pyc
 *.swp
+.coverage
+cover
 

@@ -25,9 +25,11 @@ class ControllerTest(unittest.TestCase):
         self.controller.attach(self.local_folder, self.remote_folder)
 
         # cd into the local folder to work intuitively with local path in tests
+        self.previous_cwd = os.getcwd()
         os.chdir(self.local_folder)
 
     def tearDown(self):
+        os.chdir(self.previous_cwd)
         rmtree(self.storage_folder)
         rmtree(self.local_folder)
         rmtree(self.remote_folder)
@@ -36,11 +38,12 @@ class ControllerTest(unittest.TestCase):
         ctl = self.controller
 
         # subfolder of the attachment
-        bound_local_abspath = self.local_folder + '/some_folder/some_file'
+        bound_local_abspath = join(
+            self.local_folder, 'some_folder', 'some_file')
         binding, path = ctl.split_path(bound_local_abspath)
         self.assertEqual(binding.local_folder, self.local_folder)
         self.assertEqual(binding.remote_folder, self.remote_folder)
-        self.assertEqual(path, 'some_folder/some_file')
+        self.assertEqual(path, join('some_folder', 'some_file'))
 
         # unbound path (outside of the attachment)
         self.assertRaises(ValueError, ctl.split_path, '/somewhere/else')

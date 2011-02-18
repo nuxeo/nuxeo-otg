@@ -23,8 +23,7 @@ class Synchronizer(object):
             self.local_client = LocalClient(b.local_folder)
             if binding.repository_url is not None:
                 self.remote_client = RemoteClient(
-                    b.remote_folder, repository_url=b.repository_url,
-                    username=b.username, password=b.password)
+                        b.repository_url, b.username, b.password, b.remote_folder)
             else:
                 # 'local' remote client to be used for tests only
                 self.remote_client = LocalClient(b.remote_folder)

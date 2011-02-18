@@ -11,22 +11,47 @@ class Binding(object):
         self.username = username
         self.password = password
 
+    def __eq__(self, other):
+        return (self.local_folder == other.local_folder
+                and self.remote_folder == other.remote_folder
+                and self.repository_url == other.repository_url
+                and self.username == other.username)
+
+
+class Info(object):
+    """Data transfer object representing the state in one tree"""
+
+    def __init__(self, path, uid, type, mtime, digest=None):
+        self.path = path
+        self.uid = uid
+        self.type = type
+        self.mtime = mtime
+        self.digest = digest
+
 
 class CompoundState(object):
+    """Stored metadata for each tree node to be synchronized"""
 
-    local_uid = None
     local_state = 'unknown'
-    local_mdate = None
-    local_digest = None
-
-    remote_uid = None
     remote_state = 'unknown'
-    remote_mdate = None
-    remote_digest = None
+    local_info = None
+    remote_info = None
 
     def __init__(self, binding, path):
         self.binding = binding
         self.path = path
+
+    def get_info(self, tree):
+        return getattr(self, tree + '_info')
+
+    def set_info(self, tree, info):
+        setattr(self, tree + '_info', info)
+
+    def get_state(self, tree):
+        return getattr(self, tree + '_state')
+
+    def set_state(self, tree, state):
+        setattr(self, tree + '_state', state)
 
 
 class Storage(object):
@@ -66,9 +91,41 @@ class Storage(object):
     def set_state(self, binding, path, state):
         self.states[(binding, path)] = state
 
-    def update_local_states(self, binding, new_states):
-        pass
+    def get_states(self, binding):
+        return dict((p, s) for (b, p), s in self.states.iteritems()
+                    if b == binding)
 
-    def update_remote_states(self, binding, new_states):
-        pass
+    def update_states(self, binding, new_infos, tree):
+        """Compute the new states based on modification time only"""
+        old_states = self.get_states(binding)
+
+        other = 'remote' if tree == 'local' else 'local'
+
+        for new_info in new_infos:
+            compound_state = old_states.setdefault(
+                new_state.path, CompoundState(binding, new_state.path))
+
+            old_info = compound_state.get_info(tree)
+            other_old_info = compound_state.get_info(other)
+
+            if old_info is None:
+                compound_state.set_info(new_info)
+                if other_old_info is not None:
+                    pass
+                # TODO: implement me
+            else:
+                if old_info.mtime == new_info.mtime:
+                    pass
+                # TODO: implement me
+
+            del old_states[new_state.path]
+
+        for path, compound_state in old_states.iteritems():
+            if old_info.get(tree) is not None:
+                compound_state.set_state(tree, 'deleted')
+                compound_state.set_info(tree, None)
+            # mark old state no longer present in the tree as deleted
+            # TODO implement me
+
+
 

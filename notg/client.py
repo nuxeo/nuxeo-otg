@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 from cmislib.model import CmisClient
 
-from synchronizer import State
+from storage import Info
 
 class Client(object):
     """Interface for clients."""
@@ -17,7 +17,7 @@ class Client(object):
 
     # Getters
     def get_state(self, path):
-        """Returns a State object for the given object."""
+        """Returns a Info object for the given object."""
         raise NotImplementedError
 
     def get_content(self, path):
@@ -60,7 +60,7 @@ class LocalClient(Client):
         stat_result = os.stat(os_path)
         mtime = datetime.fromtimestamp(stat_result.st_mtime)
         uid = str(stat_result.st_ino)
-        return State(path, uid, type, mtime)
+        return Info(path, uid, type, mtime)
 
     def get_content(self, path):
         fd = open(os.path.join(self.base_folder, path), "rb")
@@ -199,4 +199,4 @@ class RemoteClient(Client):
             type = 'file'
         uid = properties['cmis:objectId']
         mtime = properties['cmis:lastModificationDate']
-        return State(path, uid, type, mtime)
+        return Info(path, uid, type, mtime)

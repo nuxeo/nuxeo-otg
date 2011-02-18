@@ -1,15 +1,4 @@
-
-
-class State(object):
-    """Data transfer object representing the state in one tree"""
-
-    def __init__(self, path, uid, type, mtime, digest=None):
-        self.path = path
-        self.uid = uid
-        self.type = type
-        self.mtime = mtime
-        self.digest = digest
-
+from notg.storage import Info
 
 class Synchronizer(object):
     """Utility to compare abstract filesystem trees and update the storage
@@ -36,16 +25,13 @@ class Synchronizer(object):
         """Returns list of operations needed to bring both trees in sync."""
         pass
 
-    def fetch_remote_states(self):
-        new_states = self.fetch_states(self.remote_client)
-        self.storage.update_remote_states(self.binding, new_states)
+    def update_local_info(self):
+        new_infos = self.local_client.get_descendants()
+        self.storage.update_states(self.binding, new_infos, 'local')
 
-    def fetch_local_states(self):
-        new_states = self.fetch_states(self.local_client)
-        self.storage.update_local_states(self.binding, new_states)
-
-    def fetch_states(self, client):
-        return client.get_descendants()
+    def update_remote_info(self):
+        new_infos = self.remote_client.get_descendants()
+        self.storage.update_states(self.binding, new_infos, 'remote')
 
     #
     # Basic update operations

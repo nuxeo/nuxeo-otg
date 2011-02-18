@@ -25,9 +25,15 @@ def main():
     remote_client = RemoteClient(server, username, password, remote_root)
 
     synchronizer = Synchronizer(storage, local_client, remote_client)
+    binding = synchronizer.storage.list_bindings()[0]
 
     synchronizer.update_local_info()
     synchronizer.update_remote_info()
+
+    for k, v in synchronizer.storage.get_states(binding).items():
+        print k, (v.local_state, v.remote_state)
+
+    #synchronizer.get_operations()
 
 
 if __name__ == '__main__':

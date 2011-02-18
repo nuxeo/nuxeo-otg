@@ -14,7 +14,7 @@ class State(object):
 class Synchronizer(object):
     """Utility to compare abstract filesystem trees and update the storage
 
-    The synchronizer is in charge of instrospecting the trees, updating
+    The synchronizer is in charge of introspecting the trees, updating
     the metadata in the storage, compute the list of synchronization
     operations and perform the file transfers.
     """

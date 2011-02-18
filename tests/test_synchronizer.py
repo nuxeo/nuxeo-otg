@@ -69,8 +69,8 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
     def tearDown(self):
         shutil.rmtree(self.storagedir)
         shutil.rmtree(self.tempdir1)
-        #try:
-        #    self.remote_client.delete(self.FILE_NAME)
-        #except ObjectNotFoundException:
-        #    pass
+        try:
+            self.remote_client.delete(self.FILE_NAME)
+        except ObjectNotFoundException:
+            pass
 

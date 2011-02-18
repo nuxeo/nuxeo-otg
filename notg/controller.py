@@ -30,7 +30,7 @@ class Controller(object):
 
         # TODO: check if synchronizer process is live
 
-    def start_syncronizer(self):
+    def start_synchronizer(self):
         pass
 
     def stop_synchronizer(self):
@@ -60,7 +60,7 @@ class Controller(object):
         return b, local_path[len(b.local_folder) + 1:]
 
     def status(self, local_folder):
-        """Highlevel text status reflecting the local state"""
+        """High level text status reflecting the local state"""
         binding, path = self.split_path(local_folder)
         return self.storage.get_state(binding, path).local_state
 

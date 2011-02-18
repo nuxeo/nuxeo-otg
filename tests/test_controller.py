@@ -27,7 +27,6 @@ class ControllerTest(unittest.TestCase):
         # cd into the local folder to work intuitively with local path in tests
         os.chdir(self.local_folder)
 
-
     def tearDown(self):
         rmtree(self.storage_folder)
         rmtree(self.local_folder)

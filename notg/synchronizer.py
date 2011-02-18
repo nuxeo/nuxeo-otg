@@ -1,6 +1,8 @@
 from notg.storage import Info
+from notg.storage import CompoundState
 from notg.client import LocalClient
 from notg.client import RemoteClient
+
 
 class Synchronizer(object):
     """Utility to compare abstract filesystem trees and update the storage
@@ -41,7 +43,7 @@ class Synchronizer(object):
                              " provided")
 
     def get_operations(self):
-        """Returns list of operations needed to bring both trees in sync."""
+        """Returns list of operations needed to bring both trees in sync"""
         pass
 
     def update_local_info(self):
@@ -97,7 +99,7 @@ class Synchronizer(object):
         # remaining states can be deletions or new file created on the other
         # side
         for path, compound_state in old_states.iteritems():
-            if old_info.get(tree) is not None:
+            if compound_state.get_info(tree) is not None:
                 # mark old path no longer present in the tree as deleted
                 compound_state.set_state(tree, 'deleted')
                 compound_state.set_info(tree, None)

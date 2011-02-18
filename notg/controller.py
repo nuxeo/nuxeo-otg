@@ -60,14 +60,33 @@ class Controller(object):
         binding, path = self.split_path(local_folder)
         return self.storage.get_state(binding, path).local_state
 
+    def get_bindings_for(self, local_folder=None):
+        if local_folder is None:
+            return self.list_bindings()
+        else:
+            b, _ = self.split_path(local_folder)
+            return [b]
+
     def refresh(self, local_folder=None, async=True):
+        bindings = self.get_bindings_for(local_folder)
         if async:
             # TODO queue a command to synchronizer process
             pass
         else:
             # perform synchronization right away
-            for b in self.list_bindings():
+            for b in bindings:
                 sync = Synchronizer(self.storage, binding=b)
                 sync.update_local_info()
                 sync.update_remote_info()
+
+    def synchronize(self, local_folder=None, async=True):
+        bindings = self.get_bindings_for(local_folder)
+        if async:
+            # TODO queue a command to synchronizer process
+            pass
+        else:
+            # perform synchronization right away
+            for b in bindings:
+                sync = Synchronizer(self.storage, binding=b)
+                # TODO: implement me
 

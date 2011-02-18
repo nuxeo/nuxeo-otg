@@ -59,7 +59,31 @@ class Controller(object):
     def status(self, local_folder):
         """High level text status reflecting the local state"""
         binding, path = self.split_path(local_folder)
-        return self.storage.get_state(binding, path).local_state
+        cs = self.storage.get_state(binding, path)
+
+        summaries = {
+            # regular cases
+            ('unknown', 'unknown'): 'unknown',
+            ('synchronized', 'synchronized'): 'synchronized',
+            ('created', 'unknown'): 'locally_created',
+            ('unknown', 'created'): 'remotely_created',
+            ('modified', 'synchronized'): 'locally_modified',
+            ('synchronized', 'modified'): 'remotely_modified',
+            ('deleted', 'synchronized'): 'locally_deleted',
+            ('synchronized', 'deleted'): 'remotely_deleted',
+            ('deleted', 'deleted'): 'deleted', # should never happen
+
+            # conflict cases
+            ('modified', 'deleted'): 'conflicted',
+            ('deleted', 'modified'): 'conflicted',
+            ('modified', 'modified'): 'conflicted',
+        }
+        summary = summaries.get((cs.local_state, cs.remote_state))
+        if summary is not None:
+            return summary
+        else:
+            logging.warn("unexpected compound state: %s", cs)
+            return 'unknown'
 
     def get_bindings_for(self, local_folder=None):
         if local_folder is None:

@@ -77,7 +77,7 @@ class Synchronizer(object):
         new_infos = self.remote_client.get_descendants()
         self.update_states(new_infos, 'remote')
 
-    def update_states(self, new_infos, tree):
+    def _update_states(self, new_infos, tree):
         """Compute the new states based on modification time only"""
         old_states = self.storage.get_states(self.binding)
 
@@ -155,7 +155,7 @@ class Synchronizer(object):
         state.set_state('local', 'synchronized')
         state.set_state('remote', 'synchronized')
         new_info = self.remote_client.get_state(path)
-        state.set_state('remote', new_info)
+        state.set_info('remote', new_info)
         self.storage.set_state(self.binding, path, state)
 
     def pull(self, path):
@@ -174,7 +174,7 @@ class Synchronizer(object):
         state.set_state('local', 'synchronized')
         state.set_state('remote', 'synchronized')
         new_info = self.local_client.get_state(path)
-        state.set_state('local', new_info)
+        state.set_info('local', new_info)
         self.storage.set_state(self.binding, path, state)
 
     def delete_remote(self, path):

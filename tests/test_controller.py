@@ -68,7 +68,7 @@ class ControllerTest(unittest.TestCase):
         ctl.refresh(async=False)
 
         # the new file has been detected
-        self.assertEqual(ctl.status('file_1.txt'), 'created')
+        self.assertEqual(ctl.status('file_1.txt'), 'locally_created')
 
         # launch the synchronization and wait for the result
         ctl.synchronize(async=False)
@@ -78,4 +78,13 @@ class ControllerTest(unittest.TestCase):
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))
         with open(join(self.remote_folder, 'file_1.txt'), 'rb') as f:
             self.assertEqual(f.read(), 'This is the content of a text file.\n')
+
+        # edit the view on the remote folder
+        with open(join(self.remote_folder, 'file_1.txt'), 'wb') as f:
+            f.write("Changed content of the text file.\n")
+
+        # refresh the state
+        self.assertEqual(ctl.status('file_1.txt'), 'synchronized')
+        ctl.refresh(async=False)
+        self.assertEqual(ctl.status('file_1.txt'), 'remotely_modified')
 

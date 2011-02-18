@@ -4,7 +4,7 @@ from notg.synchronizer import Synchronizer
 import os
 
 class Controller(object):
-    """Main public API for user level operations
+    """Main public API for user level operations.
 
     Main operations:
       - create metadata store if missing

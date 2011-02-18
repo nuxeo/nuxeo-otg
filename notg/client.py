@@ -12,9 +12,6 @@ from storage import Info
 class Client(object):
     """Interface for clients."""
 
-    def get_tree(self):
-        raise NotImplementedError
-
     # Getters
     def get_state(self, path):
         """Returns a Info object for the given object."""
@@ -37,7 +34,7 @@ class Client(object):
         raise NotImplementedError
 
     def update(self, path, content):
-        """Updates existing object with provided content and/or metadata."""
+        """Updates existing object with provided content."""
         raise NotImplementedError
 
     def delete(self, path):

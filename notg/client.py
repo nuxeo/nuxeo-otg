@@ -71,10 +71,10 @@ class LocalClient(Client):
         result = []
         for root, dirs, files in os.walk(os_path):
             for dir in dirs:
-                path = os.path.join(os_path, dir)
+                path = os.path.join(os_path, root, dir)
                 result.append(self.get_state(path))
             for file in files:
-                path = os.path.join(os_path, file)
+                path = os.path.join(os_path, root, file)
                 result.append(self.get_state(path))
         return result
 

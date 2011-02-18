@@ -57,12 +57,14 @@ class AbstractClientTest(unittest.TestCase):
     def test_get_descendants(self):
         name = self.random_name()
         self.client.mkdir(name)
-        self.client.mkdir(name + "/toto1")
-        self.client.mkdir(name + "/toto2")
-        self.client.mkfile(name + "/toto3")
+        self.client.mkdir(name + "/dir1")
+        self.client.mkdir(name + "/dir2")
+        self.client.mkdir(name + "/dir1/dir3")
+        self.client.mkfile(name + "/dir1/dir3/file1")
+        self.client.mkfile(name + "/file2")
 
         descendants = self.client.get_descendants(name)
-        self.assertEquals(3, len(descendants))
+        self.assertEquals(5, len(descendants))
 
         self.client.delete(name)
 

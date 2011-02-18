@@ -79,6 +79,9 @@ class Controller(object):
                 sync = Synchronizer(self.storage, binding=b)
                 sync.update_local_info()
                 sync.update_remote_info()
+                # the second local scan is just required for the regresh after
+                # and new attach
+                sync.update_local_info()
 
     def synchronize(self, local_folder=None, async=True):
         bindings = self.get_bindings_for(local_folder)

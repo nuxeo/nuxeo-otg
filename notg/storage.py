@@ -103,7 +103,7 @@ class Storage(object):
 
         for new_info in new_infos:
             compound_state = old_states.setdefault(
-                new_state.path, CompoundState(binding, new_state.path))
+                new_info.path, CompoundState(binding, new_info.path))
 
             old_info = compound_state.get_info(tree)
             other_old_info = compound_state.get_info(other)
@@ -118,7 +118,7 @@ class Storage(object):
                     pass
                 # TODO: implement me
 
-            del old_states[new_state.path]
+            del old_states[new_info.path]
 
         for path, compound_state in old_states.iteritems():
             if old_info.get(tree) is not None:

@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 from shutil import rmtree
 from os.path import exists
 from os.path import join
+import time
 
 import os
 
@@ -52,7 +53,7 @@ class ControllerTest(unittest.TestCase):
         ctl = self.controller
         self.assertRaises(ValueError, ctl.status, '/somewhere/else')
 
-    def _test_create_one_local_file(self):
+    def test_synchronize_one_file(self):
         ctl = self.controller
 
         # check for the status of a file that has never existed
@@ -81,13 +82,35 @@ class ControllerTest(unittest.TestCase):
         self.assert_(exists(join(self.remote_folder, 'file_1.txt')))
         with open(join(self.remote_folder, 'file_1.txt'), 'rb') as f:
             self.assertEqual(f.read(), 'This is the content of a text file.\n')
+        from datetime import datetime
 
         # edit the view on the remote folder
-        with open(join(self.remote_folder, 'file_1.txt'), 'wb') as f:
+        remote_file_path = join(self.remote_folder, 'file_1.txt')
+
+        time.sleep(0.1)
+        with open(remote_file_path, 'wb') as f:
             f.write("Changed content of the text file.\n")
 
         # refresh the state
         self.assertEqual(ctl.status('file_1.txt'), 'synchronized')
         ctl.refresh(async=False)
         self.assertEqual(ctl.status('file_1.txt'), 'remotely_modified')
+
+        # synchronize
+        ctl.synchronize(async=False)
+        self.assertEqual(ctl.status('file_1.txt'), 'synchronized')
+
+        # check that the content has been updated
+        with open(join(self.remote_folder, 'file_1.txt'), 'rb') as f:
+            self.assertEqual(f.read(), 'Changed content of the text file.\n')
+
+        # delete the local file
+        os.unlink(join(self.local_folder, 'file_1.txt'))
+        ctl.refresh(async=False)
+        self.assertEqual(ctl.status('file_1.txt'), 'locally_deleted')
+
+        # propagate the delete
+        ctl.synchronize(async=False)
+        self.assert_(not exists(join(self.remote_folder, 'file_1.txt')))
+
 

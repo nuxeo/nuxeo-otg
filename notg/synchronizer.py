@@ -131,7 +131,8 @@ class Synchronizer(object):
             else:
                 # we do not have any old info on this document, this is a
                 # new document from the other side
-                compound_state.set_state(other, 'created')
+                if compound_state.get_state(tree) == 'unknown':
+                    compound_state.set_state(other, 'created')
 
             # save the change
             self.storage.set_state(self.binding, path, compound_state)

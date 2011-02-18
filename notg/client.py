@@ -57,7 +57,7 @@ class LocalClient(Client):
         stat_result = os.stat(os_path)
         mtime = datetime.fromtimestamp(stat_result.st_mtime)
         uid = str(stat_result.st_ino)
-        return Info(path, uid, type, mtime)
+        return Info(os_path[len(self.base_folder) + 1:], uid, type, mtime)
 
     def get_content(self, path):
         fd = open(os.path.join(self.base_folder, path), "rb")

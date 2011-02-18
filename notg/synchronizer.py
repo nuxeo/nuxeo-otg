@@ -78,7 +78,7 @@ class Synchronizer(object):
         new_infos = self.remote_client.get_descendants()
         self.update_states(new_infos, 'remote')
 
-    def _update_states(self, new_infos, tree):
+    def update_states(self, new_infos, tree):
         """Compute the new states based on modification time only"""
         old_states = self.storage.get_states(self.binding)
 

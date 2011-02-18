@@ -7,6 +7,7 @@
 
 import subprocess
 import sys
+import os
 
 try:
     import pynotify
@@ -23,7 +24,7 @@ class Notifier(object):
         raise NotImplementedError
 
 
-class GrowlNotifier(Notifier):
+class BrokenGrowlNotifier(Notifier):
 
     def __init__(self):
         self.has_growl = self.is_growl_running()
@@ -76,9 +77,13 @@ class GrowlNotifier(Notifier):
         else:
             return out
 
+# Hack for now
+class GrowlNotifier(Notifier):
+    def notify(self, type, title, msg):
+        subprocess.Popen(['growlnotify', '-t', title, '-m', msg])
+
 
 class LibnotifyNotifier(Notifier):
-
     def notify(self, type, title, msg):
         if pynotify:
             n = pynotify.Notification(title, msg)

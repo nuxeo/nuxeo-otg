@@ -29,11 +29,13 @@ def main():
 
     synchronizer.update_local_info()
     synchronizer.update_remote_info()
+    synchronizer.update_local_info()
 
     for k, v in synchronizer.storage.get_states(binding).items():
         print k, (v.local_state, v.remote_state)
 
     #synchronizer.get_operations()
+    synchronizer.synchronize_all()
 
 
 if __name__ == '__main__':

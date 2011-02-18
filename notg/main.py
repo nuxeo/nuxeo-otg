@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import time
+
 import os
 import ConfigParser
 
@@ -16,6 +18,7 @@ def main():
     server = config.get("global", "server")
     username = config.get("global", "username")
     password = config.get("global", "password")
+    interval = config.getint("global", "interval")
 
     local_root = config.get("bindings", "local")
     remote_root = config.get("bindings", "remote")
@@ -25,18 +28,16 @@ def main():
     remote_client = RemoteClient(server, username, password, remote_root)
 
     synchronizer = Synchronizer(storage, local_client, remote_client)
-    binding = synchronizer.storage.list_bindings()[0]
 
     synchronizer.update_local_info()
     synchronizer.update_remote_info()
     synchronizer.update_local_info()
 
-    for k, v in synchronizer.storage.get_states(binding).items():
-        print k, (v.local_state, v.remote_state)
-
-    #synchronizer.get_operations()
-    synchronizer.synchronize_all()
-
+    while True:
+        synchronizer.synchronize_all()
+        time.sleep(interval)
+        synchronizer.update_remote_info()
+        synchronizer.update_local_info()
 
 if __name__ == '__main__':
     main()

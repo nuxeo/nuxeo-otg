@@ -79,7 +79,7 @@ class BrokenGrowlNotifier(Notifier):
 # Hack for now
 class GrowlNotifier(Notifier):
     def notify(self, type, title, msg):
-        subprocess.Popen(['growlnotify', '-t', title, '-m', msg])
+        subprocess.call(['growlnotify', '-t', title, '-m', msg])
 
 
 class LibnotifyNotifier(Notifier):

@@ -185,11 +185,11 @@ class Synchronizer(object):
         logging.info("Deleting remote object with path: %s" % path)
         notify("", "Deleting remote file", "with path %s" % path)
         self.remote_client.delete(path)
-        self.storage.delete_state(self.binding, state)
+        self.storage.delete_state(self.binding, path)
 
     def delete_local(self, path):
         logging.info("Deleting local object with path: %s" % path)
         notify("", "Deleting local file", "with path %s" % path)
         self.local_client.delete(path)
-        self.storage.delete_state(self.binding, state)
+        self.storage.delete_state(self.binding, path)
 

@@ -1,3 +1,10 @@
+"""Platform neutral notification.
+
+"""
+
+# Cut and pasted from PyZen 0.1
+# Should be Copyright: 'Noah Kantrowitz' and licensed under the BSD license.
+
 import subprocess
 import sys
 
@@ -79,9 +86,17 @@ class LibnotifyNotifier(Notifier):
 
 
 class Win32Notifier(object):
-    def notify(self, type, title, msg):
-        # TODO
-        pass
+    def __init__(self):
+        from win32.wrappers import SystrayIconThread
+        self.thread = SystrayIconThread()
+        self.thread.start()
+
+    def notify(self, type, title, msg, icon=""):
+        self.thread.notify(title, msg, icon+'.ico')
+
+    def shutdown(self):
+        self.thread.quit()
+        self.thread.join()
 
 
 class NullNotifier(object):

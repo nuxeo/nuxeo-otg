@@ -16,9 +16,14 @@ commands = (
 
 def setup_logs(options):
     if options.verbose:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format='%(asctime)s %(levelname)s %(message)s')
+        level = logging.DEBUG
+    elif options.quiet:
+        level = logging.WARN,
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(
+        level=level, format='%(asctime)s %(levelname)s %(message)s')
 
 
 def handle_attach(args, parser):
@@ -76,8 +81,10 @@ if __name__ == '__main__':
     # common options
     usage = "usage: %prog cmd [options]"
     parser = OptionParser(usage=usage)
+    parser.add_option("-q", "--quiet", dest="quiet", action='store_true',
+                      default=False, help="Hide transfer info from stdout")
     parser.add_option("-v", "--verbose", dest="verbose", action='store_true',
-                      default=False, help="log synchronisation info to stdout")
+                      default=False, help="log debug info to stdout")
 
     args = sys.argv
     if len(args) < 2:

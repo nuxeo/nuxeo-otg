@@ -57,14 +57,14 @@ class CompoundState(object):
         return getattr(self, tree + '_info')
 
     def set_info(self, tree, info):
-        logging.info("store info for '%s/%s': %r" % (tree, self.path, info))
+        logging.debug("store info for '%s/%s': %r" % (tree, self.path, info))
         setattr(self, tree + '_info', info)
 
     def get_state(self, tree):
         return getattr(self, tree + '_state')
 
     def set_state(self, tree, state):
-        logging.info("mark '%s/%s' as '%s'" % (tree, self.path, state))
+        logging.debug("mark '%s/%s' as '%s'" % (tree, self.path, state))
         setattr(self, tree + '_state', state)
 
     def __repr__(self):

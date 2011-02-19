@@ -105,7 +105,7 @@ class Synchronizer(object):
         old_states = self.storage.get_states(self.binding)
 
         other = 'remote' if tree == 'local' else 'local'
-        logging.info("refreshing state for: %s", tree)
+        logging.debug("refreshing state for: %s", tree)
 
         for new_info in new_infos:
             path = new_info.path
@@ -172,7 +172,8 @@ class Synchronizer(object):
     #
 
     def push(self, path, is_new):
-        logging.info("Pushing object with path: %s" % path)
+        qualifier = 'new' if is_new else 'existing'
+        logging.info("Pushing %s object with path: %s" % (qualifier, path))
         notify("", "Pushing file to server", "with path %s" % path)
         info = self.local_client.get_state(path)
 
@@ -195,7 +196,8 @@ class Synchronizer(object):
         self.storage.set_state(self.binding, state)
 
     def pull(self, path, is_new):
-        logging.info("Pulling object with path: %s" % path)
+        qualifier = 'new' if is_new else 'existing'
+        logging.info("Pulling %s object with path: %s" % (qualifier, path))
         notify("", "Pulling file from server", "with path %s" % path)
 
         info = self.remote_client.get_state(path)

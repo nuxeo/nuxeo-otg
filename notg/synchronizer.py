@@ -115,7 +115,7 @@ class Synchronizer(object):
                     compound_state.set_info(tree, new_info)
 
             # save back change to storage
-            self.storage.set_state(self.binding, path, compound_state)
+            self.storage.set_state(self.binding, compound_state)
 
             # remove from the list of collected states to be able to detect
             # deletions
@@ -135,7 +135,7 @@ class Synchronizer(object):
                     compound_state.set_state(other, 'created')
 
             # save the change
-            self.storage.set_state(self.binding, path, compound_state)
+            self.storage.set_state(self.binding, compound_state)
 
     #
     # Basic update operations
@@ -159,7 +159,7 @@ class Synchronizer(object):
         state.set_state('remote', 'synchronized')
         new_info = self.remote_client.get_state(path)
         state.set_info('remote', new_info)
-        self.storage.set_state(self.binding, path, state)
+        self.storage.set_state(self.binding, state)
 
     def pull(self, path):
         logging.info("Pulling object with path: %s" % path)
@@ -180,7 +180,7 @@ class Synchronizer(object):
         state.set_state('remote', 'synchronized')
         new_info = self.local_client.get_state(path)
         state.set_info('local', new_info)
-        self.storage.set_state(self.binding, path, state)
+        self.storage.set_state(self.binding, state)
 
     def delete_remote(self, path):
         logging.info("Deleting remote object with path: %s" % path)

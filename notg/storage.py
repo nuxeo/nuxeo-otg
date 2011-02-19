@@ -1,6 +1,9 @@
 
 import os
 import logging
+from cPickle import load
+from cPickle import dump
+from cPickle import HIGHEST_PROTOCOL
 
 class Binding(object):
 
@@ -12,11 +15,15 @@ class Binding(object):
         self.username = username
         self.password = password
 
+    def __hash__(self):
+        return hash("%s::%s::%s" % (
+            self.local_folder, self.remote_folder, self.repository_url))
+
     def __eq__(self, other):
-        return (self.local_folder == other.local_folder
-                and self.remote_folder == other.remote_folder
-                and self.repository_url == other.repository_url
-                and self.username == other.username)
+        return hash(self) == hash(other)
+
+    def __cmp__(self, other):
+        return hash(self).__cmp__(hash(other))
 
 
 class Info(object):
@@ -69,14 +76,66 @@ class CompoundState(object):
 
 
 class Storage(object):
-    """Local storage for stateful metadata and interprocess communication"""
+    """Local storage for stateful metadata and interprocess communication
+
+    This storage implementation is dummy and not scalable at all: loads all
+    metadata in memory and does frequent serialization / deserialization using
+    the Pickle module. Needs to be rewritten using sqlite and maybe SQLAlchemy
+    but it's a good enough model for prototyping the rest of the application and
+    identify the key requirements in terms of persistence and interprocess
+    communication.
+    """
+
+    BINDINGS_FILE = 'bindings.pickle'
+    STATES_FILE = 'states.pickle'
 
     def __init__(self, db_path=None):
-        self.bindings = []
-        self.states = {}
+        if db_path is None:
+            db_path = os.path.join('~', '.nuxeo-otg')
+
+        db_path = os.path.expanduser(db_path)
+        db_path = os.path.abspath(db_path)
+        db_path = os.path.normpath(db_path)
+
+        if not os.path.exists(db_path):
+            os.makedirs(db_path)
+
+        if not os.path.isdir(db_path):
+            raise IOError("%s is not a valid directory" % db_path)
+
+        self.db_path = db_path
+
+        self.bindings_path = os.path.join(db_path, self.BINDINGS_FILE)
+        self.states_path = os.path.join(db_path, self.STATES_FILE)
+
+        self.reload_bindings()
+        self.reload_states()
+
+    def reload_bindings(self):
+        if os.path.exists(self.bindings_path):
+            with open(self.bindings_path, 'rb') as f:
+                self.bindings = load(f)
+        else:
+            self.bindings = []
+
+    def reload_states(self):
+        if os.path.exists(self.states_path):
+            with open(self.states_path, 'rb') as f:
+                self.states = load(f)
+        else:
+            self.states = {}
+
+    def persist_bindings(self):
+        with open(self.bindings_path, 'wb') as f:
+            dump(self.bindings, f, HIGHEST_PROTOCOL)
+
+    def persist_states(self):
+        with open(self.states_path, 'wb') as f:
+            dump(self.states, f, HIGHEST_PROTOCOL)
 
     def add_binding(self, local_folder, remote_folder, repository_url=None,
                     username=None, password=None):
+        self.reload_bindings()
         local_folder = os.path.abspath(local_folder)
         b = self.get_binding(local_folder)
         if b is not None:
@@ -87,12 +146,15 @@ class Storage(object):
         binding = Binding(local_folder, remote_folder, repository_url,
                           username, password)
         self.bindings.append(binding)
+        self.persist_bindings()
         return binding
 
     def list_bindings(self):
+        self.reload_bindings()
         return self.bindings[:]
 
     def get_binding(self, local_path):
+        self.reload_bindings()
         local_path = os.path.abspath(local_path)
         for binding in self.bindings:
             if local_path.startswith(binding.local_folder):
@@ -100,15 +162,21 @@ class Storage(object):
         return None
 
     def get_state(self, binding, path):
+        self.reload_states()
         return self.states.get((binding, path), CompoundState(binding, path))
 
-    def set_state(self, binding, path, state):
-        self.states[(binding, path)] = state
+    def set_state(self, binding, state):
+        self.reload_states()
+        self.states[(binding, state.path)] = state
+        self.persist_states()
 
     def get_states(self, binding):
+        self.reload_states()
         return dict((p, s) for (b, p), s in self.states.iteritems()
                     if b == binding)
 
     def delete_state(self, binding, path):
+        self.reload_states()
         del self.states[(binding, path)]
+        self.persist_states()
 

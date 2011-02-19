@@ -8,11 +8,60 @@ investigated.
 
 ## Current state
 
-This code is very very alpha quality (result of 2 days sprint at
-Nuxeo). It will probably eat your data in it's current state.
+WARNING: This code is very very alpha quality (result of 2 days sprint
+at Nuxeo). It will *eat your data*, especially in case of concurrent
+editing situations.
 
 
-## Building
+## Installing system wide
+
+Install the dependencies, e.g. under Linux and OSX:
+
+    sudo pip install -r dependencies.txt
+
+Then install notg itself:
+
+    sudo python setup.py install
+
+
+## Usage
+
+Create a workspace in Nuxeo and a new local folder on your desktop
+
+Then tell notg to bind them with:
+
+    notg attach --local-folder notg_workspace \
+                --remote-folder /default-domain/workspaces/Workspace \
+                --repository-url http://localhost:8080/nuxeo/atom/cmis \
+                --username Administrator --password Administrator
+
+    touch /home/ogrisel/notg_workspace/empty_file.txt
+
+You can then ask notg to scan their content and then list the status of the
+files with:
+
+    notg refresh
+    notg status
+    /home/ogrisel/notg_workspace/empty_file.txt    locally_created
+
+You can then manually trigger a sync with:
+
+    notg sync
+    notg status
+    /home/ogrisel/notg_workspace/empty_file.txt    synchronized
+
+To automatically scan both the server and the local folder and sync their
+content use:
+
+    notg autosync
+
+Use Ctrl-C to interrupt. A real daemon mode is planned.
+
+To unlink the folders and reset all meta-data tracked by Nuxeo On the Go,
+simply delete the `~/.nuxeo-otg` folder.
+
+
+## Building locally (for developers)
 
 First, you need to make sure you have:
 
@@ -35,7 +84,10 @@ Then type:
 
 ## Testing
 
-To test, type:
+Install a Nuxeo DM 5.4.0+ instance from http://nuxeo.com and launch it (default
+settings are fine for testing).
+
+Then in the `nuxeo-otg` folder type:
 
     make test
 
@@ -55,7 +107,7 @@ To test, type:
 
 ## About Nuxeo
 
-Nuxeo provides a modular, extensible Java-based [open source software platform for enterprise content management] [1] and packaged applications for [document management] [2], [digital asset management] [3] and [case management] [4]. Designed by developers for developers, the Nuxeo platform offers a modern architecture, a powerful plug-in model and extensive packaging capabilities for building content applications. 
+Nuxeo provides a modular, extensible Java-based [open source software platform for enterprise content management] [1] and packaged applications for [document management] [2], [digital asset management] [3] and [case management] [4]. Designed by developers for developers, the Nuxeo platform offers a modern architecture, a powerful plug-in model and extensive packaging capabilities for building content applications.
 
 [1]: http://www.nuxeo.com/en/products/ep
 [2]: http://www.nuxeo.com/en/products/document-management

@@ -5,4 +5,5 @@ env
 *.swp
 .coverage
 cover
-
+build
+dist

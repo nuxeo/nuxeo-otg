@@ -15,13 +15,16 @@ editing situations.
 
 ## Installing system wide
 
-Install the dependencies, e.g. under Linux and OSX:
+The cool people under Linux or OSX just run:
 
-    sudo pip install -r dependencies.txt
+    sudo pip install git+http://github.com/nuxeo/nuxeo-otg.git
 
-Then install notg itself:
+The poor lads under Windows will propably prefer waiting for someone to
+build a binary distribution (will probably be bundled with the sister
+project `nuxeo-otg-win` that provides a shiny Windows Explorer shell
+extension).
 
-    sudo python setup.py install
+See below for `virtualenv` based install.
 
 
 ## Usage

@@ -41,12 +41,15 @@ You can then ask notg to scan their content and then list the status of the
 files with:
 
     notg refresh
+
     notg status
     /home/ogrisel/notg_workspace/empty_file.txt    locally_created
 
 You can then manually trigger a sync with:
 
     notg sync
+    2011-02-19 19:23:34,668 INFO Pushing new object with path: empty_file.txt
+
     notg status
     /home/ogrisel/notg_workspace/empty_file.txt    synchronized
 

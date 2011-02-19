@@ -6,6 +6,7 @@ from notg.client import LocalClient
 from notg.client import RemoteClient
 from notg.notification import notify
 
+
 def get_clients(binding):
     """Utility function to instanciate a client pair from a binding"""
     b = binding

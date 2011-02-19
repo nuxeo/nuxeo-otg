@@ -6,6 +6,12 @@ Currently uses the CMIS protocol, though more efficient protocols may be
 investigated.
 
 
+## Current state
+
+This code is very very alpha quality (result of 2 days sprint at
+Nuxeo). It will probably eat your data in it's current state.
+
+
 ## Building
 
 First, you need to make sure you have:
@@ -32,6 +38,19 @@ Then type:
 To test, type:
 
     make test
+
+
+## Roadmap, TODOs, shortcomings
+
+- implement asynchronous process that continuously refresh & synchronize using polling
+- use watchdog to monitor FS incrementally instead of local polling
+- use smart CMISQL queries to only download the properties for files that have
+  changed (need access to the audit log to detect deleted files)
+- use digest to ensure that files have really changed or don't need a sync
+- implement local client renaming of files in conflicted state
+- implement a better storage for metadata (currently load everything in memory
+  an greedily hit the disk with the pickle module): use sqlite / SQLAlchemy
+  instead
 
 
 ## About Nuxeo

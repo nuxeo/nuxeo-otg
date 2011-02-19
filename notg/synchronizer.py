@@ -66,27 +66,31 @@ class Synchronizer(object):
         for path, state in states:
             # TODO: detect conflicts and resolve them by renaming local file
             # before pulling the remote resource
-            if state.remote_state in ('created', 'modified'):
-                operations.append(('pull', path))
-            elif state.local_state in ('created', 'modified'):
-                operations.append(('push', path))
+            if state.remote_state == 'created':
+                operations.append(('pull', path, True))
+            elif state.remote_state == 'modified':
+                operations.append(('pull', path, False))
+            elif state.local_state == 'created':
+                operations.append(('push', path, True))
+            elif state.local_state == 'modified':
+                operations.append(('push', path, False))
             elif state.local_state == 'deleted':
                 operations.append(('delete_remote', path))
             elif state.remote_state == 'deleted':
                 operations.append(('delete_local', path))
 
         # filter operations inside deleted folders
-        for operation, path in operations[:]:
-            if operation.startswith('delete_'):
-                operations = [(o, p) for o, p in operations
-                              if not p.startswith(path + '/')]
+        for op in operations[:]:
+            if op[0].startswith('delete_'):
+                operations = [other_op for other_op in operations
+                              if not other_op[1].startswith(op[1] + '/')]
         return operations
 
     def synchronize_all(self):
         """Perform blocking synchronization"""
         operations = self.get_operations()
-        for op, path in operations:
-            getattr(self, op)(path)
+        for op in operations:
+            getattr(self, op[0])(*op[1:])
 
     def update_local_info(self):
         new_infos = self.local_client.get_descendants()
@@ -167,7 +171,7 @@ class Synchronizer(object):
     # Basic update operations
     #
 
-    def push(self, path):
+    def push(self, path, is_new):
         logging.info("Pushing object with path: %s" % path)
         notify("", "Pushing file to server", "with path %s" % path)
         info = self.local_client.get_state(path)
@@ -177,7 +181,10 @@ class Synchronizer(object):
             self.remote_client.mkdir(path)
         else:
             content = self.local_client.get_content(path)
-            self.remote_client.mkfile(path, content)
+            if is_new:
+                self.remote_client.mkfile(path, content)
+            else:
+                self.remote_client.update(path, content)
 
         # update the metadata
         state = self.storage.get_state(self.binding, path)
@@ -187,7 +194,7 @@ class Synchronizer(object):
         state.set_info('remote', new_info)
         self.storage.set_state(self.binding, state)
 
-    def pull(self, path):
+    def pull(self, path, is_new):
         logging.info("Pulling object with path: %s" % path)
         notify("", "Pulling file from server", "with path %s" % path)
 
@@ -198,7 +205,10 @@ class Synchronizer(object):
             self.local_client.mkdir(path)
         else:
             content = self.remote_client.get_content(path)
-            self.local_client.mkfile(path, content)
+            if is_new:
+                self.local_client.mkfile(path, content)
+            else:
+                self.local_client.update(path, content)
 
         # update the metadata
         state = self.storage.get_state(self.binding, path)

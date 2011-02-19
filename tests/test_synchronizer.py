@@ -15,12 +15,12 @@ class AbstractSynchronizerTest(unittest.TestCase):
     synchronizer = None
     remote_client = None
 
-    TEST_CONTENT = "Some random text"
-    FILE_NAME = "toto"
+    TEST_CONTENT = "Some boring text.\n"
+    FILE_NAME = "The notg test file.txt"
 
     def test_synchronize_file(self):
         self.local_client.mkfile(self.FILE_NAME, self.TEST_CONTENT)
-        self.synchronizer.push(self.FILE_NAME)
+        self.synchronizer.push(self.FILE_NAME, True)
         content = self.remote_client.get_content(self.FILE_NAME)
         self.assertEquals(self.TEST_CONTENT, content)
 

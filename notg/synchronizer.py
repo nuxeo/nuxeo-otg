@@ -46,29 +46,36 @@ class Synchronizer(object):
 
     def get_operations(self):
         """Returns list of operations needed to bring both trees in sync"""
-        # TODO: implement me!
-        return []
+        # inspect the current state to find out what to do
+        states = self.storage.get_states(self.binding).items()
+
+        # sort by path names to create folders before their content
+        states.sort()
+
+        # first path compute atomic operations
+        operations = []
+        for path, state in states:
+            if state.local_state in ('created', 'modified'):
+                operations.append(('push', path))
+            elif state.remote_state in ('created', 'modified'):
+                operations.append(('pull', path))
+            elif state.local_state == 'deleted':
+                operations.append(('delete_remote', path))
+            elif state.remote_state == 'deleted':
+                operations.append(('delete_local', path))
+
+        # filter operations inside deleted folders
+        for operation, path in operations[:]:
+            if operation.startswith('delete_'):
+                operations = [(o, p) for o, p in operations
+                              if not p.startswith(path + '/')]
+        return operations
 
     def synchronize_all(self):
         """Perform blocking synchronization"""
-        # TODO: refactor me to make it a two stages process to allow for
-        # queue-based non-blocking asynchronous processing
-
-        # TODO: simplify deletions: handle sub trees
-
-        states = self.storage.get_states(self.binding).items()
-
-        # sort by path names to create folders before
-        states.sort()
-        for path, state in states:
-            if state.local_state in ('created', 'modified'):
-                self.push(path)
-            elif state.remote_state in ('created', 'modified'):
-                self.pull(path)
-            elif state.local_state == 'deleted':
-                self.delete_remote(path)
-            elif state.remote_state == 'deleted':
-                self.delete_local(path)
+        operations = self.get_operations()
+        for op, path in operations:
+            getattr(self, op)(path)
 
     def update_local_info(self):
         new_infos = self.local_client.get_descendants()

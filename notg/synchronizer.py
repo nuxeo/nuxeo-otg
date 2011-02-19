@@ -1,4 +1,5 @@
 import logging
+import os
 
 from notg.storage import Info
 from notg.storage import CompoundState
@@ -181,48 +182,67 @@ class Synchronizer(object):
         qualifier = 'new ' if is_new else ''
         notify("", "Pushing %sfile to server" % qualifier, path)
         info = self.local_client.get_state(path)
-
-        # transfer the content
-        if info.type == 'folder':
-            self.remote_client.mkdir(path)
-        else:
-            content = self.local_client.get_content(path)
-            if is_new:
-                self.remote_client.mkfile(path, content)
+        if info is None:
+            # operation was triggered on deprecated info
+            remote_info = self.remote_client.get_state(path)
+            if remote_info is None:
+                # deleted on both sides, cleanup the metadata record
+                self.storage.delete_state(self.binding, path)
             else:
-                self.remote_client.update(path, content)
+                # content has been deleted: perform a delete instead
+                self.delete_remote(path)
 
-        # update the metadata
-        state = self.storage.get_state(self.binding, path)
-        state.set_state('local', 'synchronized')
-        state.set_state('remote', 'synchronized')
-        new_info = self.remote_client.get_state(path)
-        state.set_info('remote', new_info)
-        self.storage.set_state(self.binding, state)
+        else:
+            # transfer the content
+            if info.type == 'folder':
+                self.remote_client.mkdir(path)
+            else:
+                content = self.local_client.get_content(path)
+                if is_new:
+                    self.remote_client.mkfile(path, content)
+                else:
+                    self.remote_client.update(path, content)
+
+            # update the metadata
+            state = self.storage.get_state(self.binding, path)
+            state.set_state('local', 'synchronized')
+            state.set_state('remote', 'synchronized')
+            new_info = self.remote_client.get_state(path)
+            state.set_info('remote', new_info)
+            self.storage.set_state(self.binding, state)
 
     def pull(self, path, is_new):
         qualifier = 'new ' if is_new else ''
         notify("", "Pulling %sfile from server" % qualifier, path)
 
         info = self.remote_client.get_state(path)
-
-        # transfer the content
-        if info.type == 'folder':
-            self.local_client.mkdir(path)
-        else:
-            content = self.remote_client.get_content(path)
-            if is_new:
-                self.local_client.mkfile(path, content)
+        if info is None:
+            # operation was triggered on deprecated info
+            local_info = self.local_client.get_state(path)
+            if local_info is None:
+                # deleted on both sides, cleanup the metadata record
+                self.storage.delete_state(self.binding, path)
             else:
-                self.local_client.update(path, content)
+                # content has been deleted: perform a delete instead
+                self.delete_local(path)
+        else:
+            # transfer the content
+            if info.type == 'folder':
+                self.local_client.mkdir(path)
+            else:
+                content = self.remote_client.get_content(path)
+                if is_new:
+                    self.local_client.mkfile(path, content)
+                else:
+                    self.local_client.update(path, content)
 
-        # update the metadata
-        state = self.storage.get_state(self.binding, path)
-        state.set_state('local', 'synchronized')
-        state.set_state('remote', 'synchronized')
-        new_info = self.local_client.get_state(path)
-        state.set_info('local', new_info)
-        self.storage.set_state(self.binding, state)
+            # update the metadata
+            state = self.storage.get_state(self.binding, path)
+            state.set_state('local', 'synchronized')
+            state.set_state('remote', 'synchronized')
+            new_info = self.local_client.get_state(path)
+            state.set_info('local', new_info)
+            self.storage.set_state(self.binding, state)
 
     def delete_remote(self, path):
         notify("", "Deleting remote file", path)

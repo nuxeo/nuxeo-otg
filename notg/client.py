@@ -6,6 +6,7 @@ import shutil
 import os
 from datetime import datetime
 from cmislib.model import CmisClient
+from cmislib.exceptions import ObjectNotFoundException
 
 from storage import Info
 
@@ -50,6 +51,8 @@ class LocalClient(Client):
     # Getters
     def get_state(self, path):
         os_path = os.path.join(self.base_folder, path)
+        if not os.path.exists(os_path):
+            return None
         if os.path.isdir(os_path):
             type = 'folder'
         else:
@@ -60,8 +63,7 @@ class LocalClient(Client):
         return Info(os_path[len(self.base_folder) + 1:], uid, type, mtime)
 
     def get_content(self, path):
-        fd = open(os.path.join(self.base_folder, path), "rb")
-        return fd.read()
+        return open(os.path.join(self.base_folder, path), "rb").read()
 
     def get_descendants(self, path=None):
         if path is None:
@@ -83,21 +85,19 @@ class LocalClient(Client):
         os.mkdir(os.path.join(self.base_folder, path))
 
     def mkfile(self, path, content=None):
-        fd = open(os.path.join(self.base_folder, path), "wcb")
-        if content:
-            fd.write(content)
-        fd.close()
+        with open(os.path.join(self.base_folder, path), "wcb") as f:
+            if content:
+                f.write(content)
 
     def update(self, path, content):
-        fd = open(os.path.join(self.base_folder, path), "wb")
-        fd.write(content)
-        fd.close()
+        with open(os.path.join(self.base_folder, path), "wb") as f:
+            f.write(content)
 
     def delete(self, path):
         os_path = os.path.join(self.base_folder, path)
         if os.path.isfile(os_path):
             os.unlink(os_path)
-        else:
+        elif os.path.isdir(os_path):
             shutil.rmtree(os_path)
 
 
@@ -141,9 +141,12 @@ class RemoteClient(Client):
 
     def get_state(self, path):
         remote_path = self.get_remote_path(path)
-        object = self.repo.getObjectByPath(remote_path)
-        properties = object.properties
-        return self.make_state(path, properties)
+        try:
+            object = self.repo.getObjectByPath(remote_path)
+            properties = object.properties
+            return self.make_state(path, properties)
+        except ObjectNotFoundException:
+            return None
 
     def get_content(self, path):
         remote_path = self.get_remote_path(path)
@@ -173,12 +176,16 @@ class RemoteClient(Client):
 
     def delete(self, path):
         remote_path = self.get_remote_path(path)
-        object = self.repo.getObjectByPath(remote_path)
-        # XXX: hack, fix later
         try:
-            object.delete()
-        except:
-            object.deleteTree()
+            object = self.repo.getObjectByPath(remote_path)
+            # XXX: hack, fix later
+            try:
+                object.delete()
+            except:
+                object.deleteTree()
+        except ObjectNotFoundException:
+            # nothing to delete
+            pass
 
     #
     # Utilities

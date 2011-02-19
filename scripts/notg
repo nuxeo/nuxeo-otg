@@ -5,12 +5,14 @@ import logging
 import sys
 from notg.controller import Controller
 from os.path import join
+import time
 
 commands = (
     'attach',
     'status',
     'refresh',
     'sync',
+    'autosync',
 )
 
 
@@ -76,10 +78,24 @@ def handle_sync(args, parser):
     setup_logs(options)
     Controller().synchronize(args, async=options.async)
 
+def handle_autosync(args, parser):
+    parser.add_option("-i", "--interval", dest="interval", type=float,
+                      default=3.0, help="Interval between 2 syncs in seconds")
+    options, args = parser.parse_args(args)
+    setup_logs(options)
+    ctl = Controller()
+    try:
+        while True:
+            ctl.refresh(args, async=False)
+            ctl.synchronize(args, async=False)
+            time.sleep(options.interval)
+    except KeyboardInterrupt:
+        pass
+
 
 if __name__ == '__main__':
     # common options
-    usage = "usage: %prog cmd [options]"
+    usage = "Usage: %prog cmd [options]\nwhere cmd is one of " + str(commands)
     parser = OptionParser(usage=usage)
     parser.add_option("-q", "--quiet", dest="quiet", action='store_true',
                       default=False, help="Hide transfer info from stdout")

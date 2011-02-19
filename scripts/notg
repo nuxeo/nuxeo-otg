@@ -84,13 +84,14 @@ def handle_autosync(args, parser):
     options, args = parser.parse_args(args)
     setup_logs(options)
     ctl = Controller()
+    logging.info('Starting autosync')
     try:
         while True:
             ctl.refresh(args, async=False)
             ctl.synchronize(args, async=False)
             time.sleep(options.interval)
     except KeyboardInterrupt:
-        pass
+        logging.info('Shutting down autosync')
 
 
 if __name__ == '__main__':

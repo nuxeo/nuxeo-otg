@@ -216,5 +216,3 @@ class ControllerTest(unittest.TestCase):
         self.assert_(not exists(join(l, 'x', 'y')))
         self.assert_(not exists(join(r, 'x', 'y')))
 
-
-

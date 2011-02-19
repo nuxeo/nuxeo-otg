@@ -169,12 +169,14 @@ class RemoteClient(Client):
         parent_path, name = os.path.split(remote_path)
         parent_folder = self.repo.getObjectByPath(parent_path)
         content_file = StringIO(content)
+        content_file.name = path.rsplit('/', 1)[-1]
         parent_folder.createDocument(name, contentFile=content_file)
 
     def update(self, path, content):
         remote_path = self.get_remote_path(path)
         object = self.repo.getObjectByPath(remote_path)
         content_file = StringIO(content)
+        content_file.name = path.rsplit('/', 1)[-1]
         return object.setContentStream(content_file)
         # TODO: manage also mime type
 

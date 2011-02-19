@@ -67,17 +67,19 @@ class Synchronizer(object):
         for path, state in states:
             # TODO: detect conflicts and resolve them by renaming local file
             # before pulling the remote resource
-            if state.remote_state == 'created':
+            l = state.local_state
+            r = state.remote_state
+            if r == 'created' or (r == 'modified' and l == 'deleted'):
                 operations.append(('pull', path, True))
-            elif state.remote_state == 'modified':
+            elif r == 'modified':
                 operations.append(('pull', path, False))
-            elif state.local_state == 'created':
+            elif l == 'created' or (l == 'modified' and r == 'deleted'):
                 operations.append(('push', path, True))
-            elif state.local_state == 'modified':
+            elif l == 'modified':
                 operations.append(('push', path, False))
-            elif state.local_state == 'deleted':
+            elif l == 'deleted':
                 operations.append(('delete_remote', path))
-            elif state.remote_state == 'deleted':
+            elif r == 'deleted':
                 operations.append(('delete_local', path))
 
         # filter operations inside deleted folders

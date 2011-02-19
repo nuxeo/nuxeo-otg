@@ -178,9 +178,8 @@ class Synchronizer(object):
     #
 
     def push(self, path, is_new):
-        qualifier = 'new' if is_new else 'existing'
-        logging.info("Pushing %s object with path: %s" % (qualifier, path))
-        notify("", "Pushing file to server", "with path %s" % path)
+        qualifier = 'new ' if is_new else ''
+        notify("", "Pushing %sfile to server" % qualifier, path)
         info = self.local_client.get_state(path)
 
         # transfer the content
@@ -202,9 +201,8 @@ class Synchronizer(object):
         self.storage.set_state(self.binding, state)
 
     def pull(self, path, is_new):
-        qualifier = 'new' if is_new else 'existing'
-        logging.info("Pulling %s object with path: %s" % (qualifier, path))
-        notify("", "Pulling file from server", "with path %s" % path)
+        qualifier = 'new ' if is_new else ''
+        notify("", "Pulling %sfile from server" % qualifier, path)
 
         info = self.remote_client.get_state(path)
 
@@ -227,14 +225,12 @@ class Synchronizer(object):
         self.storage.set_state(self.binding, state)
 
     def delete_remote(self, path):
-        logging.info("Deleting remote object with path: %s" % path)
-        notify("", "Deleting remote file", "with path %s" % path)
+        notify("", "Deleting remote file", path)
         self.remote_client.delete(path)
         self.storage.delete_state(self.binding, path)
 
     def delete_local(self, path):
-        logging.info("Deleting local object with path: %s" % path)
-        notify("", "Deleting local file", "with path %s" % path)
+        notify("", "Deleting local file", path)
         self.local_client.delete(path)
         self.storage.delete_state(self.binding, path)
 

@@ -5,6 +5,7 @@
 # Cut and pasted from PyZen 0.1
 # Should be Copyright: 'Noah Kantrowitz' and licensed under the BSD license.
 
+import logging
 import subprocess
 import sys
 
@@ -110,13 +111,14 @@ class NullNotifier(object):
 
 if sys.platform == "darwin":
     notifier = GrowlNotifier()
-#elif sys.platform == "linux":
-#    notifier = LibnotifyNotifier()
-#elif sys.platform == "win32":
-#    notifier = Win32Notifier()
+elif sys.platform == "linux2":
+    notifier = LibnotifyNotifier()
+elif sys.platform == "win32":
+    notifier = Win32Notifier()
 else:
     notifier = NullNotifier()
 
 
 def notify(type, title, msg):
+    logging.info("%s: %s" % (title, msg))
     notifier.notify(type, title, msg)

@@ -92,16 +92,21 @@ class Synchronizer(object):
         for op in operations:
             getattr(self, op[0])(*op[1:])
 
-    def update_local_info(self):
+    def update_local_info(self, updated_other=False):
         new_infos = self.local_client.get_descendants()
-        self.update_states(new_infos, 'local')
+        self.update_states(new_infos, 'local', updated_other=updated_other)
 
-    def update_remote_info(self):
+    def update_remote_info(self, updated_other=False):
         new_infos = self.remote_client.get_descendants()
-        self.update_states(new_infos, 'remote')
+        self.update_states(new_infos, 'remote', updated_other=updated_other)
 
-    def update_states(self, new_infos, tree):
-        """Compute the new states based on modification time only"""
+    def update_states(self, new_infos, tree, updated_other=False):
+        """Compute the new states based on modification time only
+
+        udpated_other == True makes the assumption that the other tree data has
+        been updated recently and makes it possible to detect newly created
+        files.
+        """
         old_states = self.storage.get_states(self.binding)
 
         other = 'remote' if tree == 'local' else 'local'
@@ -126,9 +131,10 @@ class Synchronizer(object):
                     compound_state.set_state(tree, 'synchronized')
                     compound_state.set_state(other, 'synchronized')
                 else:
-                    # leave the state to unknown while waiting for other info to
-                    # come in
                     compound_state.set_info(tree, new_info)
+                    if updated_other:
+                        compound_state.set_state(tree, 'created')
+                    # otherwise leave as unknown
             else:
                 # detect modifications to propagate
                 if new_info.mtime > old_info.mtime:

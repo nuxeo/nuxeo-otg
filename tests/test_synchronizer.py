@@ -9,20 +9,39 @@ from notg.synchronizer import Synchronizer
 
 from config import *
 
+
 class AbstractSynchronizerTest(unittest.TestCase):
     __test__ = False
     local_client = None
     synchronizer = None
     remote_client = None
 
-    TEST_CONTENT = "Some boring text.\n"
-    FILE_NAME = "The notg test file.txt"
+    FILE_PATH = "The notg test file.txt"
+    FILE_CONTENT = "Some boring text.\n"
 
-    def test_synchronize_file(self):
-        self.local_client.mkfile(self.FILE_NAME, self.TEST_CONTENT)
-        self.synchronizer.push(self.FILE_NAME, True)
-        content = self.remote_client.get_content(self.FILE_NAME)
-        self.assertEquals(self.TEST_CONTENT, content)
+    def test_push_file(self):
+        self.local_client.mkfile(self.FILE_PATH, self.FILE_CONTENT)
+        self.synchronizer.push(self.FILE_PATH, True)
+        content = self.remote_client.get_content(self.FILE_PATH)
+        self.assertEquals(self.FILE_CONTENT, content)
+
+    def test_empty_file(self):
+        self.local_client.mkfile(self.FILE_PATH)
+        self.synchronizer.push(self.FILE_PATH, True)
+        content = self.remote_client.get_content(self.FILE_PATH)
+        #self.assertEquals(content, None)
+
+    def test_pull_file(self):
+        self.remote_client.mkfile(self.FILE_PATH, self.FILE_CONTENT)
+        self.synchronizer.pull(self.FILE_PATH, True)
+        content = self.local_client.get_content(self.FILE_PATH)
+        self.assertEquals(self.FILE_CONTENT, content)
+
+    def test_pull_file(self):
+        self.remote_client.mkfile(self.FILE_PATH)
+        self.synchronizer.pull(self.FILE_PATH, True)
+        content = self.local_client.get_content(self.FILE_PATH)
+        #self.assertEquals(content, None)
 
 
 class LocalLocalSynchronizerTest(AbstractSynchronizerTest):
@@ -59,7 +78,7 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
         self.remote_client = RemoteClient(REPOSITORY_URL, USERNAME, PASSWORD,
                                           REMOTE_PATH)
         try:
-            self.remote_client.delete(self.FILE_NAME)
+            self.remote_client.delete(self.FILE_PATH)
         except ObjectNotFoundException:
             pass
 
@@ -70,7 +89,7 @@ class LocalRemoteSynchronizerTest(AbstractSynchronizerTest):
         shutil.rmtree(self.storagedir)
         shutil.rmtree(self.tempdir1)
         try:
-            self.remote_client.delete(self.FILE_NAME)
+            self.remote_client.delete(self.FILE_PATH)
         except ObjectNotFoundException:
             pass
 

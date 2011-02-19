@@ -6,6 +6,18 @@ from notg.client import LocalClient
 from notg.client import RemoteClient
 from notg.notification import notify
 
+def get_clients(binding):
+    """Utility function to instanciate a client pair from a binding"""
+    b = binding
+    local_client = LocalClient(b.local_folder)
+    if binding.repository_url is not None:
+        remote_client = RemoteClient(
+            b.repository_url, b.username, b.password, b.remote_folder)
+    else:
+        # 'local' remote client to be used for tests only
+        remote_client = LocalClient(b.remote_folder)
+    return local_client, remote_client
+
 
 class Synchronizer(object):
     """Utility to compare abstract filesystem trees and update the storage
@@ -20,19 +32,15 @@ class Synchronizer(object):
         self.storage = storage
 
         if binding is not None:
-            self.binding = b = binding
-            self.local_client = LocalClient(b.local_folder)
-            if binding.repository_url is not None:
-                self.remote_client = RemoteClient(
-                        b.repository_url, b.username, b.password, b.remote_folder)
-            else:
-                # 'local' remote client to be used for tests only
-                self.remote_client = LocalClient(b.remote_folder)
+            self.binding = binding
+            self.local_client, self.remote_client = get_clients(binding)
 
         elif local_client is not None and remote_client is not None:
             self.local_client = local_client
             self.remote_client = remote_client
 
+            # automatically create a binding for the client pair if none is
+            # found
             self.binding = self.storage.get_binding(local_client.base_folder)
             if self.binding is None:
                 self.binding = self.storage.add_binding(

@@ -151,7 +151,11 @@ class RemoteClient(Client):
     def get_content(self, path):
         remote_path = self.get_remote_path(path)
         object = self.repo.getObjectByPath(remote_path)
-        return object.getContentStream().read()
+        try:
+            return object.getContentStream().read()
+        except AssertionError:
+            # No attached stream: bug in Nuxeo?
+            return ""
 
     # Modifiers
     def mkdir(self, path):

@@ -55,10 +55,12 @@ class Synchronizer(object):
         # first path compute atomic operations
         operations = []
         for path, state in states:
-            if state.local_state in ('created', 'modified'):
-                operations.append(('push', path))
-            elif state.remote_state in ('created', 'modified'):
+            # TODO: detect conflicts and resolve them by renaming local file
+            # before pulling the remote resource
+            if state.remote_state in ('created', 'modified'):
                 operations.append(('pull', path))
+            elif state.local_state in ('created', 'modified'):
+                operations.append(('push', path))
             elif state.local_state == 'deleted':
                 operations.append(('delete_remote', path))
             elif state.remote_state == 'deleted':
@@ -117,9 +119,17 @@ class Synchronizer(object):
             else:
                 # detect modifications to propagate
                 if new_info.mtime > old_info.mtime:
-                    # this is a modified document
-                    compound_state.set_state(tree, 'modified')
+
+                    # update the info in any case
                     compound_state.set_info(tree, new_info)
+
+                    if not (old_info.type == new_info.type == 'folder'):
+                        # this is a modified document
+                        compound_state.set_state(tree, 'modified')
+
+                    # else this is a folder whose content has changed: no need
+                    # to mark it as modified since only the content need to be
+                    # synchronized, not the folder itself
 
             # save back change to storage
             self.storage.set_state(self.binding, compound_state)

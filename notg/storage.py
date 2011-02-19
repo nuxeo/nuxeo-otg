@@ -178,5 +178,10 @@ class Storage(object):
     def delete_state(self, binding, path):
         self.reload_states()
         del self.states[(binding, path)]
+        for (b, p), s in self.states.items():
+            if b == binding and p.startswith(path + '/'):
+                del self.states[(binding, p)]
+
+        # also delete all subpath
         self.persist_states()
 

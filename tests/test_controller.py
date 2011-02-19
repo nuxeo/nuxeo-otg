@@ -113,4 +113,84 @@ class ControllerTest(unittest.TestCase):
         self.assert_(not exists(join(self.remote_folder, 'file_1.txt')))
 
 
+    def test_synchronize_folders(self):
+        ctl = self.controller
+
+        # create some folders locally and remotely
+        l = self.local_folder
+        r = self.remote_folder
+        os.makedirs(join(l, 'a', 'b', 'c', 'd'))
+        os.makedirs(join(r, 'x', 'y', 'z'))
+
+        # refresh state and check some status
+        ctl.refresh(async=False)
+        self.assertEqual(ctl.status('a'), 'locally_created')
+        self.assertEqual(ctl.status('a/b'), 'locally_created')
+        self.assertEqual(ctl.status('a/b/c'), 'locally_created')
+        self.assertEqual(ctl.status('a/b/c/d'), 'locally_created')
+        self.assertEqual(ctl.status('x'), 'remotely_created')
+        self.assertEqual(ctl.status('x/y'), 'remotely_created')
+        self.assertEqual(ctl.status('x/y/z'), 'remotely_created')
+
+        # trigger the sync
+        ctl.synchronize(async=False)
+        self.assertEqual(ctl.status('a'), 'synchronized')
+        self.assertEqual(ctl.status('a/b'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c/d'), 'synchronized')
+        self.assertEqual(ctl.status('x'), 'synchronized')
+        self.assertEqual(ctl.status('x/y'), 'synchronized')
+        self.assertEqual(ctl.status('x/y/z'), 'synchronized')
+
+        # check that this is really the case
+        self.assert_(os.path.isdir(join(r, 'a', 'b', 'c', 'd')))
+        self.assert_(os.path.isdir(join(l, 'x', 'y', 'z')))
+
+        # the local user a text file in remote folder
+        with open(join(r, 'a', 'b', 'c', 'file_1.txt'), 'wb') as f:
+            f.write("This is the content of a text file.\n")
+
+        # refresh and check status
+        ctl.refresh(async=False)
+        self.assertEqual(ctl.status('a/b/c'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c/d'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c/file_1.txt'), 'remotely_created')
+
+        # sync the file and check the result in the local folder
+        ctl.synchronize(async=False)
+        self.assertEqual(ctl.status('a/b/c/file_1.txt'), 'synchronized')
+        self.assert_(os.path.isfile(join(l, 'a', 'b', 'c','file_1.txt')))
+
+        # delete the folder c in the local folder and the y folder remotely
+        rmtree(join(l, 'a', 'b', 'c'))
+        rmtree(join(r, 'x', 'y'))
+
+        # refresh and check the state
+        ctl.refresh(async=False)
+        self.assertEqual(ctl.status('a'), 'synchronized')
+        self.assertEqual(ctl.status('a/b'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c'), 'locally_deleted')
+        self.assertEqual(ctl.status('a/b/c/d'), 'locally_deleted')
+        self.assertEqual(ctl.status('a/b/c/file_1.txt'), 'locally_deleted')
+        self.assertEqual(ctl.status('x'), 'synchronized')
+        self.assertEqual(ctl.status('x/y'), 'remotely_deleted')
+        self.assertEqual(ctl.status('x/y/z'), 'remotely_deleted')
+
+        # launch the sync, check status and check folder content
+        ctl.synchronize(async=False)
+        self.assertEqual(ctl.status('a'), 'synchronized')
+        self.assertEqual(ctl.status('a/b'), 'synchronized')
+        self.assertEqual(ctl.status('a/b/c'), 'unknown')
+        self.assertEqual(ctl.status('a/b/c/d'), 'unknown')
+        self.assertEqual(ctl.status('a/b/c/file_1.txt'), 'unknown')
+        self.assertEqual(ctl.status('x'), 'synchronized')
+        self.assertEqual(ctl.status('x/y'), 'unknown')
+        self.assertEqual(ctl.status('x/y/z'), 'unknown')
+
+        self.assert_(not exists(join(l, 'a', 'b', 'c')))
+        self.assert_(not exists(join(r, 'a', 'b', 'c')))
+        self.assert_(not exists(join(l, 'x', 'y')))
+        self.assert_(not exists(join(r, 'x', 'y')))
+
+
 

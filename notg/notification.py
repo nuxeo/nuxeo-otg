@@ -108,17 +108,29 @@ class NullNotifier(object):
     def notify(self, type, title, msg):
         pass
 
+notifier = NullNotifier()
 
-if sys.platform == "darwin":
-    notifier = GrowlNotifier()
-elif sys.platform == "linux2":
-    notifier = LibnotifyNotifier()
-elif sys.platform == "win32":
-    notifier = Win32Notifier()
-else:
+def enable_notifier():
+    global notifier
+    if sys.platform == "darwin":
+        notifier = GrowlNotifier()
+    elif sys.platform == "linux2":
+        notifier = LibnotifyNotifier()
+    elif sys.platform == "win32":
+        notifier = Win32Notifier()
+    else:
+        notifier = NullNotifier()
+
+
+def disable_notifier():
+    global notifier
     notifier = NullNotifier()
-
 
 def notify(type, title, msg):
     logging.info("%s: %s" % (title, msg))
     notifier.notify(type, title, msg)
+
+# notifier enabled by default on first import
+enable_notifier()
+
+

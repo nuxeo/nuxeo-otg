@@ -1,6 +1,7 @@
 import unittest
 from notg.controller import Controller
 from notg.client import LocalClient
+from notg.notification import disable_notifier
 from tempfile import mkdtemp
 from shutil import rmtree
 from os.path import exists
@@ -13,6 +14,9 @@ import os
 class ControllerTest(unittest.TestCase):
 
     def setUp(self):
+        # avoid spurious notifications while running the tests
+        disable_notifier()
+
         # controller component to test
         self.storage_folder = mkdtemp('nuxeo-otg-storage-')
         self.controller = Controller(storage=self.storage_folder,
@@ -215,4 +219,68 @@ class ControllerTest(unittest.TestCase):
         self.assert_(not exists(join(r, 'a', 'b', 'c')))
         self.assert_(not exists(join(l, 'x', 'y')))
         self.assert_(not exists(join(r, 'x', 'y')))
+
+    def test_ignored_files(self):
+        ctl = self.controller
+
+        # create some folders locally and remotely
+        l = self.local_folder
+        r = self.remote_folder
+        os.makedirs(join(l, 'a', 'b', '.hidden_in_b'))
+        with open(join(l, 'a', '.hidden_in_a.txt'), 'wb') as f:
+            f.write("This is the content of a hidden text file.\n")
+        with open(join(l, 'a', 'file_in_a.txt'), 'wb') as f:
+            f.write("This is the content of a text file.\n")
+
+        os.makedirs(join(r, 'x', 'y', '.hidden_in_y'))
+        with open(join(r, 'x', '.hidden_in_x.txt'), 'wb') as f:
+            f.write("This is the content of a hidden text file.\n")
+        with open(join(r, 'x', 'file_in_x.txt'), 'wb') as f:
+            f.write("This is the content of a text file.\n")
+
+        # refresh state and check some status
+        ctl.refresh(async=False)
+        expected_status = [
+            (l, 'a', 'locally_created'),
+            (l, 'a/b', 'locally_created'),
+            (l, 'a/file_in_a.txt', 'locally_created'),
+            (l, 'x', 'remotely_created'),
+            (l, 'x/file_in_x.txt', 'remotely_created'),
+            (l, 'x/y', 'remotely_created'),
+        ]
+        self.assertEqual(ctl.status(), expected_status)
+
+        # trigger the sync
+        ctl.synchronize(async=False)
+        expected_status = [
+            (l, 'a', 'synchronized'),
+            (l, 'a/b', 'synchronized'),
+            (l, 'a/file_in_a.txt', 'synchronized'),
+            (l, 'x', 'synchronized'),
+            (l, 'x/file_in_x.txt', 'synchronized'),
+            (l, 'x/y', 'synchronized'),
+        ]
+        self.assertEqual(ctl.status(), expected_status)
+
+        # delete the a branch on the remote side
+        rmtree(join(r, 'a'))
+        ctl.refresh(async=False)
+        expected_status = [
+            (l, 'a', 'remotely_deleted'),
+            (l, 'a/b', 'remotely_deleted'),
+            (l, 'a/file_in_a.txt', 'remotely_deleted'),
+            (l, 'x', 'synchronized'),
+            (l, 'x/file_in_x.txt', 'synchronized'),
+            (l, 'x/y', 'synchronized'),
+        ]
+        self.assertEqual(ctl.status(), expected_status)
+        ctl.synchronize(async=False)
+        expected_status = [
+            (l, 'x', 'synchronized'),
+            (l, 'x/file_in_x.txt', 'synchronized'),
+            (l, 'x/y', 'synchronized'),
+        ]
+        self.assertEqual(ctl.status(), expected_status)
+
+
 

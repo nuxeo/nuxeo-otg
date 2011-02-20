@@ -73,11 +73,13 @@ class LocalClient(Client):
         result = []
         for root, dirs, files in os.walk(os_path):
             for dir in dirs:
-                path = os.path.join(os_path, root, dir)
-                result.append(self.get_state(path))
+                if not dir.startswith('.'):
+                    path = os.path.join(os_path, root, dir)
+                    result.append(self.get_state(path))
             for file in files:
-                path = os.path.join(os_path, root, file)
-                result.append(self.get_state(path))
+                if not file.startswith('.'):
+                    path = os.path.join(os_path, root, file)
+                    result.append(self.get_state(path))
         return result
 
     # Modifiers
@@ -126,6 +128,8 @@ class RemoteClient(Client):
             child_name = properties['cmis:name']
             if properties.has_key('cmis:path'):
                 child_name = properties['cmis:path'].split('/')[-1]
+            if child_name.startswith('.'):
+                continue
             if path == "":
                 child_path = child_name
             else:

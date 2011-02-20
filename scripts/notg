@@ -79,12 +79,12 @@ def handle_sync(args, parser):
     Controller().synchronize(args, async=options.async)
 
 def handle_autosync(args, parser):
-    parser.add_option("-i", "--interval", dest="interval", type=float,
-                      default=3.0, help="Interval between 2 syncs in seconds")
+    parser.add_option("-i", "--interval", dest="interval", type=int,
+                      default=3, help="Interval between 2 syncs in seconds")
     options, args = parser.parse_args(args)
     setup_logs(options)
     ctl = Controller()
-    logging.info('Starting autosync')
+    logging.info('Starting autosync with %ds refresh period', options.interval)
     try:
         while True:
             ctl.refresh(args, async=False)
